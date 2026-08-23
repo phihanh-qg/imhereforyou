@@ -1,0 +1,115 @@
+{
+  "entities": {
+    "users": {
+      "title": "Users",
+      "description": "User profiles including role (parent, child, trusted_contact), preferences, and family association",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "displayName": { "type": "string" },
+        "email": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "role": { "type": "string", "enum": ["parent", "child", "trusted_contact"] },
+        "familyId": { "type": "string" },
+        "elderlyTitle": { "type": "string" },
+        "phoneNumber": { "type": "string" },
+        "checkInWindow": {
+          "type": "object",
+          "properties": {
+            "startHour": { "type": "number" },
+            "endHour": { "type": "number" }
+          }
+        },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "displayName", "email", "role"]
+    },
+    "families": {
+      "title": "Families",
+      "description": "Family groups linking parents and children",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "createdBy": { "type": "string" },
+        "parentIds": { "type": "array", "items": { "type": "string" } },
+        "childIds": { "type": "array", "items": { "type": "string" } },
+        "trustedContactIds": { "type": "array", "items": { "type": "string" } },
+        "inviteCode": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "createdBy"]
+    },
+    "checkIns": {
+      "title": "CheckIns",
+      "description": "Daily parent check-in records",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "familyId": { "type": "string" },
+        "parentId": { "type": "string" },
+        "parentName": { "type": "string" },
+        "status": { "type": "string", "enum": ["ok", "need_help"] },
+        "note": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "dateStr": { "type": "string" },
+        "timezone": { "type": "string" }
+      },
+      "required": ["familyId", "parentId", "status", "timestamp"]
+    },
+    "moods": {
+      "title": "Moods",
+      "description": "Self-reported parent mood entries",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "familyId": { "type": "string" },
+        "parentId": { "type": "string" },
+        "mood": { "type": "string", "enum": ["happy", "normal", "tired", "sad"] },
+        "moodLabel": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "dateStr": { "type": "string" }
+      },
+      "required": ["familyId", "parentId", "mood", "timestamp"]
+    },
+    "voiceMessages": {
+      "title": "VoiceMessages",
+      "description": "Recorded audio messages between parents and children",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "familyId": { "type": "string" },
+        "senderId": { "type": "string" },
+        "senderName": { "type": "string" },
+        "senderRole": { "type": "string" },
+        "audioDataUrl": { "type": "string" },
+        "storageUrl": { "type": "string" },
+        "duration": { "type": "number" },
+        "transcript": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "listenedBy": { "type": "array", "items": { "type": "string" } }
+      },
+      "required": ["familyId", "senderId", "timestamp"]
+    },
+    "aiInsights": {
+      "title": "AIInsights",
+      "description": "Gemini AI-analyzed interaction patterns and empathic recommendations for children",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "familyId": { "type": "string" },
+        "parentId": { "type": "string" },
+        "status": { "type": "string", "enum": ["normal", "attention", "alert"] },
+        "summary": { "type": "string" },
+        "changes": { "type": "array", "items": { "type": "string" } },
+        "recommendation": { "type": "string" },
+        "confidence": { "type": "number" },
+        "period": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["familyId", "parentId", "status", "summary", "recommendation"]
+    }
+  }
+}

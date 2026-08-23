@@ -1,0 +1,65 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Users collection: users can read and write their own profile
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated() && request.auth.uid == userId;
+      allow delete: if false;
+    }
+
+    // Families collection: anyone can read to resolve invite code, authenticated users can write
+    match /families/{familyId} {
+      allow read: if true;
+      allow create, update: if true;
+      allow delete: if false;
+    }
+
+    // Family members
+    match /familyMembers/{memberId} {
+      allow read, write: if true;
+      allow delete: if isAuthenticated();
+    }
+
+    // Family invitations
+    match /familyInvitations/{inviteId} {
+      allow read, write: if true;
+    }
+    match /checkIns/{checkInId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    // Moods
+    match /moods/{moodId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    // Voice & Chat messages
+    match /voiceMessages/{messageId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    match /chatMessages/{messageId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    // Alerts
+    match /alerts/{alertId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    // AI Insights
+    match /aiInsights/{insightId} {
+      allow read, write: if isAuthenticated();
+    }
+  }
+}

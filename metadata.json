@@ -1,0 +1,6 @@
+{
+  "name": "Con Có Ở Đây - I'm Here For You",
+  "description": "Nền tảng kết nối gia đình hỗ trợ bố mẹ lớn tuổi và con cái giữ liên lạc với check-in một chạm, theo dõi tâm trạng, tin nhắn thoại và thông tin thấu cảm từ Gemini AI.",
+  "requestFramePermissions": ["microphone", "geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
