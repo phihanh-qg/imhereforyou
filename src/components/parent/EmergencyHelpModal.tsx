@@ -35,8 +35,9 @@ export const EmergencyHelpModal: React.FC<EmergencyHelpModalProps> = ({
       try {
         const pos: GeolocationPosition = await new Promise((resolve, reject) => {
           navigator.geolocation.getCurrentPosition(resolve, reject, {
-            timeout: 6000,
-            enableHighAccuracy: false,
+            timeout: 5000,
+            enableHighAccuracy: true,
+            maximumAge: 30000,
           });
         });
         locationData = {
@@ -44,7 +45,22 @@ export const EmergencyHelpModal: React.FC<EmergencyHelpModalProps> = ({
           lng: pos.coords.longitude,
         };
       } catch (locErr) {
-        console.warn("Could not retrieve precise location:", locErr);
+        console.warn("Could not retrieve precise location, trying low accuracy:", locErr);
+        try {
+          const posLow: GeolocationPosition = await new Promise((resolve, reject) => {
+            navigator.geolocation.getCurrentPosition(resolve, reject, {
+              timeout: 4000,
+              enableHighAccuracy: false,
+              maximumAge: 60000,
+            });
+          });
+          locationData = {
+            lat: posLow.coords.latitude,
+            lng: posLow.coords.longitude,
+          };
+        } catch (e2) {
+          console.warn("Geolocation unavailable:", e2);
+        }
       }
     }
 

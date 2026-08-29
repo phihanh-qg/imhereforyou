@@ -72,12 +72,12 @@ export const NotificationBanner: React.FC<NotificationBannerProps> = ({
                 </div>
               ) : (
                 <span className="text-xs text-slate-500 italic block">
-                  Đang định vị GPS...
+                  Chưa định vị được GPS
                 </span>
               )}
             </div>
 
-            {/* Emergency Action Buttons Grid */}
+            {/* Emergency Action Buttons */}
             <div className="space-y-2 pt-1">
               {/* Call Family */}
               {onCallParent && (
@@ -90,23 +90,13 @@ export const NotificationBanner: React.FC<NotificationBannerProps> = ({
                 </button>
               )}
 
-              <div className="grid grid-cols-2 gap-2">
-                {/* Call 115 Ambulance */}
-                <a
-                  href="tel:115"
-                  className="py-3 rounded-2xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold transition-all text-center no-underline flex items-center justify-center cursor-pointer"
-                >
-                  Gọi 115
-                </a>
-
-                {/* Call Doctor */}
-                <a
-                  href="tel:19001567"
-                  className="py-3 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all text-center no-underline flex items-center justify-center cursor-pointer"
-                >
-                  Gọi Bác sĩ
-                </a>
-              </div>
+              {/* Call 115 Ambulance */}
+              <a
+                href="tel:115"
+                className="w-full py-3.5 rounded-2xl bg-rose-600 hover:bg-rose-700 text-white text-sm font-bold transition-all text-center no-underline flex items-center justify-center cursor-pointer border-0"
+              >
+                Gọi 115
+              </a>
 
               {/* Resolve / Safe */}
               <button
