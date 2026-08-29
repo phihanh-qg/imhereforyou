@@ -326,8 +326,8 @@ export const ChildDashboard: React.FC = () => {
       >
         {/* TAB 1: HOME PANEL - TỐI GIẢN & TẬP TRUNG (GIỐNG NGƯỜI LỚN TUỔI + NÚT PHÂN TÍCH) */}
         {activeTab === "home" && (
-          <main className="flex-1 flex flex-col items-center justify-center py-2 md:py-4 w-full max-w-md mx-auto">
-            <div className="w-full text-center flex flex-col items-center space-y-4 md:space-y-5">
+          <main className="flex-1 flex flex-col items-center justify-center py-2 md:py-4 w-full max-w-md mx-auto md:h-full">
+            <div className="w-full text-center flex flex-col items-center justify-center space-y-3.5 md:space-y-4 lg:space-y-5 flex-1 max-h-[600px] lg:max-h-[640px]">
               
               {/* Header Info */}
               <div className="max-w-md mx-auto space-y-2">
@@ -335,7 +335,7 @@ export const ChildDashboard: React.FC = () => {
                   <span>{todayFormattedDate}</span>
                 </div>
 
-                <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-[#17191c] leading-tight m-0">
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-[#17191c] leading-tight m-0">
                   Hôm nay bạn vẫn ổn chứ?
                 </h1>
 
@@ -344,20 +344,20 @@ export const ChildDashboard: React.FC = () => {
                 </p>
               </div>
 
-              {/* Central Check-in Hero Button - Made significantly larger for desktop ("nhân vật chính") */}
-              <div className="mx-auto w-[240px] h-[240px] md:w-[310px] md:h-[310px] grid place-items-center rounded-full bg-[#f6faf7] relative before:content-[''] before:absolute before:inset-[12px] md:before:inset-[16px] before:border before:border-[#dcefe3] before:rounded-full before:pointer-events-none transition-all duration-300">
+              {/* Central Check-in Hero Button - Made responsive to screen height to prevent scrolling */}
+              <div className="mx-auto w-[230px] h-[230px] md:w-[260px] md:h-[260px] lg:w-[310px] lg:h-[310px] grid place-items-center rounded-full bg-[#f6faf7] relative before:content-[''] before:absolute before:inset-[12px] md:before:inset-[14px] lg:before:inset-[16px] before:border before:border-[#dcefe3] before:rounded-full before:pointer-events-none transition-all duration-300">
                 <button
                   id="childCheckBtn"
                   onClick={handleCheckIn}
                   disabled={isCheckInLoading}
-                  className={`w-[195px] h-[195px] md:w-[260px] md:h-[260px] border-0 rounded-full text-white cursor-pointer select-none transition-all duration-300 z-10 flex flex-col items-center justify-center outline-none active:scale-[0.97] hover:-translate-y-1 ${
+                  className={`w-[185px] h-[185px] md:w-[210px] md:h-[210px] lg:w-[260px] lg:h-[260px] border-0 rounded-full text-white cursor-pointer select-none transition-all duration-300 z-10 flex flex-col items-center justify-center outline-none active:scale-[0.97] hover:-translate-y-1 ${
                     hasChildCheckedInToday
                       ? "bg-[#159447] animate-success shadow-[0_16px_40px_rgba(21,148,71,0.28)]"
                       : "bg-[#28b463] shadow-[0_16px_40px_rgba(40,180,99,0.24)] hover:shadow-[0_20px_48px_rgba(40,180,99,0.3)] animate-breathe"
                   }`}
                 >
                   <svg
-                    className={`w-8 h-8 md:w-11 md:h-11 mx-auto mb-1 md:mb-2 ${
+                    className={`w-8 h-8 md:w-9 md:h-9 lg:w-11 lg:h-11 mx-auto mb-1 md:mb-1.5 lg:mb-2 ${
                       hasChildCheckedInToday ? "animate-draw" : ""
                     }`}
                     viewBox="0 0 24 24"
@@ -367,7 +367,7 @@ export const ChildDashboard: React.FC = () => {
                   >
                     <path d="m5 12 4.2 4.2L19 6.8" />
                   </svg>
-                  <span className="block text-[22px] md:text-[28px] font-black my-1 leading-tight tracking-tight">
+                  <span className="block text-[22px] md:text-[24px] lg:text-[28px] font-black my-1 leading-tight tracking-tight">
                     {hasChildCheckedInToday ? "Bạn đã bình an" : "Báo bình an"}
                   </span>
                 </button>

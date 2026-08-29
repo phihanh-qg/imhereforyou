@@ -43,12 +43,12 @@ function MainApp() {
   const isParent = profile.role === "parent";
 
   return (
-    <div className="min-h-screen bg-white text-slate-900 flex flex-col">
+    <div className="min-h-screen md:h-screen md:overflow-hidden bg-white text-slate-900 flex flex-col">
       <Header 
         onOpenFamilySettings={() => setShowSettings(true)} 
         onOpenUserSettings={() => setShowUserSettings(true)}
       />
-      <main className="flex-1 bg-white">
+      <main className="flex-1 bg-white min-h-0">
         {isParent ? <ParentDashboard /> : <ChildDashboard />}
       </main>
 
