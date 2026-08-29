@@ -362,10 +362,7 @@ export const ChildDashboard: React.FC = () => {
     }
   }, [profile]);
 
-  const familyId = profile?.familyId || "";
-
   const parentMember = members.find((m) => m.role === "parent");
-  const parentName = parentMember?.displayName || "Mẹ";
 
   useEffect(() => {
     if (!familyId || !user) return;
