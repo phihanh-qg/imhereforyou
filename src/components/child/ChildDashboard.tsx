@@ -532,21 +532,26 @@ export const ChildDashboard: React.FC = () => {
                   </p>
                 </div>
 
-                {/* Hero Check-in Button */}
-                <div className="relative">
-                  <div className={`absolute inset-0 rounded-full transition-all duration-500 ${
+                {/* Hero Check-in Button with continuous radiating wave animation */}
+                <div className="relative flex items-center justify-center">
+                  <div className={`absolute inset-0 rounded-full transition-all duration-700 ${
                     hasChildCheckedInToday
-                      ? "shadow-[0_0_0_16px_rgba(21,148,71,0.08),0_0_0_32px_rgba(21,148,71,0.04)]"
-                      : "shadow-[0_0_0_16px_rgba(40,180,99,0.08),0_0_0_32px_rgba(40,180,99,0.04)] animate-breathe"
+                      ? "shadow-[0_0_0_16px_rgba(21,148,71,0.08)]"
+                      : "animate-ripple"
+                  }`} />
+                  <div className={`absolute -inset-4 rounded-full transition-all duration-1000 ${
+                    hasChildCheckedInToday
+                      ? "hidden"
+                      : "bg-emerald-400/25 animate-ping opacity-40 pointer-events-none"
                   }`} />
                   <button
                     id="childCheckBtn"
                     onClick={handleCheckIn}
                     disabled={isCheckInLoading}
-                    className={`relative w-[200px] h-[200px] md:w-[240px] md:h-[240px] lg:w-[280px] lg:h-[280px] border-0 rounded-full text-white cursor-pointer select-none transition-all duration-300 flex flex-col items-center justify-center outline-none active:scale-95 disabled:opacity-80 ${
+                    className={`relative w-[190px] h-[190px] md:w-[240px] md:h-[240px] lg:w-[280px] lg:h-[280px] border-0 rounded-full text-white cursor-pointer select-none transition-all duration-300 flex flex-col items-center justify-center outline-none active:scale-95 disabled:opacity-80 ${
                       hasChildCheckedInToday
                         ? "bg-[#159447] shadow-[0_20px_60px_rgba(21,148,71,0.35)]"
-                        : "bg-[#28b463] shadow-[0_20px_60px_rgba(40,180,99,0.3)] hover:shadow-[0_24px_70px_rgba(40,180,99,0.4)] hover:scale-[1.02]"
+                        : "bg-[#28b463] shadow-[0_20px_60px_rgba(40,180,99,0.4)] hover:shadow-[0_24px_70px_rgba(40,180,99,0.5)] hover:scale-[1.03]"
                     }`}
                   >
                     <svg
@@ -555,7 +560,7 @@ export const ChildDashboard: React.FC = () => {
                     >
                       <path d="m5 12 4.2 4.2L19 6.8" />
                     </svg>
-                    <span className="text-[18px] md:text-[22px] lg:text-[26px] font-black leading-tight tracking-tight">
+                    <span className="text-[18px] md:text-[22px] lg:text-[26px] font-bold leading-tight tracking-tight">
                       {isCheckInLoading ? "Đang gửi..." : hasChildCheckedInToday ? "Đã bình an" : "Báo bình an"}
                     </span>
                   </button>
@@ -564,34 +569,34 @@ export const ChildDashboard: React.FC = () => {
                 {/* Status */}
                 <div className="min-h-[32px] flex items-center justify-center">
                   {hasChildCheckedInToday ? (
-                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#e8f5ee] text-[#159447] font-semibold text-sm">
+                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#e8f5ee] text-[#159447] font-semibold text-xs sm:text-sm">
                       <Check className="w-4 h-4 stroke-[3]" />
                       Đã gửi thông báo đến gia đình
                     </div>
                   ) : (
-                    <div className="inline-flex items-center gap-2 text-[#9ca3af] text-sm font-medium">
+                    <div className="inline-flex items-center gap-2 text-[#9ca3af] text-xs sm:text-sm font-medium">
                       <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
                       Hôm nay bạn chưa check-in
                     </div>
                   )}
                 </div>
 
-                {/* Action buttons */}
+                {/* Action buttons with no text wrapping on Mobile */}
                 <div className="w-full grid grid-cols-2 gap-3">
                   <button
                     type="button"
                     id="btnAnalysis"
                     onClick={() => setShowAiModal(true)}
-                    className="flex items-center justify-center py-4 rounded-2xl bg-[#f0faf4] hover:bg-[#e4f7ec] border border-[#d1f0de] text-[#159447] font-semibold text-sm transition-all duration-150 cursor-pointer active:scale-95"
+                    className="flex items-center justify-center py-3.5 px-2 rounded-2xl bg-[#f0faf4] hover:bg-[#e4f7ec] border border-[#d1f0de] text-[#159447] font-bold text-xs sm:text-sm transition-all duration-150 cursor-pointer active:scale-95 whitespace-nowrap"
                   >
-                    <span>Phân tích (AI)</span>
+                    <span>Phân tích</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => setShowHelpModal(true)}
-                    className="flex items-center justify-center py-4 rounded-2xl bg-[#fff4f6] hover:bg-[#ffe8ec] border border-[#ffd0d8] text-[#d94b61] font-semibold text-sm transition-all duration-150 cursor-pointer active:scale-95"
+                    className="flex items-center justify-center py-3.5 px-2 rounded-2xl bg-[#fff4f6] hover:bg-[#ffe8ec] border border-[#ffd0d8] text-[#d94b61] font-bold text-xs sm:text-sm transition-all duration-150 cursor-pointer active:scale-95 whitespace-nowrap"
                   >
-                    <span>Trợ giúp khẩn cấp (SOS)</span>
+                    <span>Trợ giúp SOS</span>
                   </button>
                 </div>
 
@@ -880,11 +885,11 @@ export const ChildDashboard: React.FC = () => {
                   {/* Right Column (1 Column): AI Insights */}
                   <div className="space-y-6">
 
-                    {/* AI Insights Card */}
+                    {/* Warm Family Insights Card */}
                     <div className="p-6 bg-white border border-slate-200/80 rounded-2xl shadow-2xs space-y-4">
                       <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
                         <Sparkles className="w-4 h-4 text-[#159447]" />
-                        <h3 className="text-base font-bold text-slate-900 tracking-tight">AI Insights</h3>
+                        <h3 className="text-base font-bold text-slate-900 tracking-tight">Gợi ý hỏi thăm</h3>
                       </div>
 
                       <div className="space-y-3">
