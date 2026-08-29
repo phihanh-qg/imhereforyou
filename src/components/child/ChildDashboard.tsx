@@ -75,6 +75,8 @@ import {
 
 export const ChildDashboard: React.FC = () => {
   const { user, profile, family, members, refreshProfile, signOut } = useAuth();
+  const familyId = profile?.familyId || family?.id || "";
+  const parentName = profile?.displayName || "Con";
 
   const [activeTab, setActiveTab] = useState<"home" | "family" | "calls" | "dashboard" | "settings">("home");
 
