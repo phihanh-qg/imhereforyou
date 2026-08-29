@@ -62,6 +62,14 @@ import {
   Smile,
   Activity,
   BarChart3,
+  TrendingUp,
+  Calendar,
+  Bell,
+  CheckCircle2,
+  AlertCircle,
+  Zap,
+  Award,
+  Plus,
 } from "lucide-react";
 
 export const ChildDashboard: React.FC = () => {
@@ -118,6 +126,113 @@ export const ChildDashboard: React.FC = () => {
   const [dailyReminderToggle, setDailyReminderToggle] = useState<boolean>(true);
   const [emergencyAlertToggle, setEmergencyAlertToggle] = useState<boolean>(true);
   const [isSavingSettings, setIsSavingSettings] = useState(false);
+
+  // Analytics & Reminders State
+  const [selectedTimeRange, setSelectedTimeRange] = useState<"today" | "week" | "month">("week");
+  const [reminders, setReminders] = useState<{ id: string; text: string; memberName: string; time: string; completed: boolean }[]>([
+    { id: "1", text: "Uống thuốc & tập thể dục buổi sáng", memberName: "Mẹ", time: "08:00", completed: true },
+    { id: "2", text: "Đi dạo công viên 15 phút", memberName: "Bố", time: "16:30", completed: false },
+    { id: "3", text: "Hỏi thăm sức khỏe & trò chuyện gia đình", memberName: "Cả nhà", time: "20:00", completed: false },
+  ]);
+  const [newReminderText, setNewReminderText] = useState("");
+  const [showAddReminderForm, setShowAddReminderForm] = useState(false);
+
+  // Computed Activity Stats
+  const dashboardStats = useMemo(() => {
+    const totalMembers = members.length;
+    const todayCheckIns = checkIns.filter((c) => c.dateStr === todayStr);
+    const checkInRate = totalMembers > 0 ? Math.round((todayCheckIns.length / totalMembers) * 100) : 0;
+
+    const completedRemindersCount = reminders.filter((r) => r.completed).length;
+    const totalRemindersCount = reminders.length;
+    const reminderRate = totalRemindersCount > 0 ? Math.round((completedRemindersCount / totalRemindersCount) * 100) : 0;
+
+    const connectionScore = Math.min(100, Math.max(35, Math.round((checkInRate * 0.6) + (reminderRate * 0.4))));
+
+    return {
+      totalMembers,
+      todayCheckInsCount: todayCheckIns.length,
+      checkInRate,
+      completedRemindersCount,
+      totalRemindersCount,
+      reminderRate,
+      connectionScore,
+    };
+  }, [members, checkIns, todayStr, reminders]);
+
+  // Per-member last active time & activity history map
+  const memberActivityMap = useMemo(() => {
+    const map: Record<string, { lastCheckIn?: CheckInRecord; history: CheckInRecord[] }> = {};
+    members.forEach((m) => {
+      const mCheckIns = checkIns
+        .filter((c) => c.userId === m.userId || c.parentId === m.userId)
+        .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+      map[m.userId] = {
+        lastCheckIn: mCheckIns[0],
+        history: mCheckIns,
+      };
+    });
+    return map;
+  }, [members, checkIns]);
+
+  // Dynamic AI Insights
+  const aiInsights = useMemo(() => {
+    const list: { title: string; desc: string; type: "alert" | "info" | "success"; actionText?: string }[] = [];
+
+    const membersWithoutCheckInToday = members.filter((m) => {
+      const act = memberActivityMap[m.userId];
+      return !act?.lastCheckIn || act.lastCheckIn.dateStr !== todayStr;
+    });
+
+    if (membersWithoutCheckInToday.length > 0) {
+      const names = membersWithoutCheckInToday.map((m) => m.displayName).join(", ");
+      list.push({
+        title: "Phát hiện thành viên chưa check-in",
+        desc: `${names} chưa phát sinh báo bình an hôm nay. Gợi ý bạn gửi lời nhắn hoặc gọi điện hỏi thăm.`,
+        type: "alert",
+        actionText: "Gửi hỏi thăm ngay",
+      });
+    } else {
+      list.push({
+        title: "Gia đình kết nối tối ưu",
+        desc: "Tất cả thành viên trong gia đình đều đã thực hiện báo bình an hôm nay! Mức độ gắn kết đạt điểm tối đa.",
+        type: "success",
+      });
+    }
+
+    list.push({
+      title: "Thời điểm kết nối lý tưởng",
+      desc: "Thói quen tương tác cho thấy từ 18:30 - 20:30 tối là lúc mọi người thong thả nhất để gọi video nhóm.",
+      type: "info",
+      actionText: "Cuộc gọi nhóm",
+    });
+
+    return list;
+  }, [members, memberActivityMap, todayStr]);
+
+  const toggleReminder = (id: string) => {
+    setReminders((prev) =>
+      prev.map((r) => (r.id === id ? { ...r, completed: !r.completed } : r))
+    );
+  };
+
+  const handleAddReminder = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newReminderText.trim()) return;
+    setReminders((prev) => [
+      ...prev,
+      {
+        id: Date.now().toString(),
+        text: newReminderText.trim(),
+        memberName: "Gia đình",
+        time: "19:00",
+        completed: false,
+      },
+    ]);
+    setNewReminderText("");
+    setShowAddReminderForm(false);
+    showToast("Đã thêm lời nhắc mới ✓");
+  };
 
   // Dynamic Mood Statistics
   const moodStats = useMemo(() => {
@@ -325,7 +440,7 @@ export const ChildDashboard: React.FC = () => {
     { id: "home" as const, label: "Trang chủ", icon: Home },
     { id: "family" as const, label: "Người thân", icon: Users },
     { id: "calls" as const, label: "Cuộc gọi", icon: Video },
-    { id: "dashboard" as const, label: "Phân tích cảm xúc", icon: LayoutDashboard },
+    { id: "dashboard" as const, label: "Tổng quan", icon: LayoutDashboard },
     { id: "settings" as const, label: "Cài đặt", icon: Settings },
   ];
 
@@ -671,180 +786,292 @@ export const ChildDashboard: React.FC = () => {
             </div>
           )}
 
-          {/* TAB: EMOTION ANALYSIS DASHBOARD */}
+          {/* TAB: FAMILY ANALYTICS & DASHBOARD (Apple Activity / Health Style) */}
           {activeTab === "dashboard" && (
             <div className="flex-1 overflow-y-auto px-4 sm:px-8 py-6">
               <div className="max-w-lg mx-auto space-y-6">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-lg bg-emerald-50 text-[#159447] flex items-center justify-center shrink-0">
-                    <LayoutDashboard className="w-4 h-4" />
+
+                {/* Header & Filter segment */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-xl font-bold text-[#17191c] tracking-tight">Tổng quan gia đình</h2>
+                    <p className="text-xs text-[#8b9096]">Theo dõi hoạt động, kết nối & phân tích AI</p>
                   </div>
-                  <h2 className="text-xl font-bold text-[#17191c] tracking-tight">Phân tích cảm xúc gia đình</h2>
+                  <div className="inline-flex bg-[#f2f3f5] rounded-xl p-1 shrink-0 self-start sm:self-auto">
+                    {(["today", "week", "month"] as const).map((t) => (
+                      <button
+                        key={t}
+                        type="button"
+                        onClick={() => setSelectedTimeRange(t)}
+                        className={`px-3 py-1 rounded-lg text-xs font-bold transition-all border-0 cursor-pointer capitalize ${
+                          selectedTimeRange === t ? "bg-white text-[#159447] shadow-2xs" : "text-slate-500 hover:text-slate-800"
+                        }`}
+                      >
+                        {t === "today" ? "Hôm nay" : t === "week" ? "Tuần này" : "Tháng này"}
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
-                {/* Vibe Summary Card */}
-                <div className="p-5 rounded-2xl bg-white border border-slate-150 shadow-2xs space-y-4">
+                {/* Top Metrics Apple Grid (4 Widgets) */}
+                <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                  {/* Card 1: Family Members */}
+                  <div className="p-4 rounded-2xl bg-white border border-slate-150 shadow-2xs space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Người thân</span>
+                      <Users className="w-4 h-4 text-emerald-600" />
+                    </div>
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-2xl font-black text-slate-800">{dashboardStats.totalMembers}</span>
+                      <span className="text-xs font-semibold text-slate-500">thành viên</span>
+                    </div>
+                    <p className="text-[10px] text-emerald-600 font-bold flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Đang hoạt động
+                    </p>
+                  </div>
+
+                  {/* Card 2: Today Check-in */}
+                  <div className="p-4 rounded-2xl bg-white border border-slate-150 shadow-2xs space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Check-in</span>
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                    </div>
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-2xl font-black text-slate-800">{dashboardStats.todayCheckInsCount}/{dashboardStats.totalMembers}</span>
+                      <span className="text-xs font-semibold text-slate-500">đã báo</span>
+                    </div>
+                    <div className="w-full h-1.5 rounded-full bg-slate-100 overflow-hidden mt-1">
+                      <div className="h-full bg-[#28b463] rounded-full transition-all duration-500" style={{ width: `${dashboardStats.checkInRate}%` }} />
+                    </div>
+                  </div>
+
+                  {/* Card 3: Reminders */}
+                  <div className="p-4 rounded-2xl bg-white border border-slate-150 shadow-2xs space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Lời nhắc</span>
+                      <Bell className="w-4 h-4 text-blue-600" />
+                    </div>
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-2xl font-black text-slate-800">{dashboardStats.completedRemindersCount}/{dashboardStats.totalRemindersCount}</span>
+                      <span className="text-xs font-semibold text-slate-500">hoàn thành</span>
+                    </div>
+                    <div className="w-full h-1.5 rounded-full bg-slate-100 overflow-hidden mt-1">
+                      <div className="h-full bg-blue-500 rounded-full transition-all duration-500" style={{ width: `${dashboardStats.reminderRate}%` }} />
+                    </div>
+                  </div>
+
+                  {/* Card 4: Connection Score Ring */}
+                  <div className="p-4 rounded-2xl bg-white border border-slate-150 shadow-2xs space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Mức độ kết nối</span>
+                      <Zap className="w-4 h-4 text-amber-500" />
+                    </div>
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-2xl font-black text-slate-800">{dashboardStats.connectionScore}%</span>
+                      <span className="text-xs font-semibold text-emerald-600 font-bold">Gắn kết</span>
+                    </div>
+                    <p className="text-[10px] text-slate-400 font-medium">Tăng +12% tuần này</p>
+                  </div>
+                </div>
+
+                {/* ✨ AI Insights & Smart Action Card */}
+                <div className="p-5 rounded-3xl bg-gradient-to-br from-emerald-500 to-teal-700 text-white shadow-md space-y-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Trạng thái chung</span>
-                    <span className="text-xs font-semibold text-slate-500">Dựa trên lịch sử cập nhật</span>
+                    <div className="flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-lg bg-white/20 backdrop-blur-xs flex items-center justify-center">
+                        <Sparkles className="w-4 h-4 text-amber-300" />
+                      </div>
+                      <span className="text-xs font-bold uppercase tracking-wider text-emerald-100">AI Intelligence Insight</span>
+                    </div>
+                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-white/15 text-white">Tự động phân tích</span>
                   </div>
-
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-full bg-[#E8F8F0] flex items-center justify-center shrink-0">
-                      <Smile className="w-6 h-6 text-[#159447]" />
-                    </div>
-                    <div>
-                      <span className="text-xs text-slate-500 block">Bầu không khí hôm nay</span>
-                      <span className="text-base font-black text-slate-800">{familyEmotionalVibe}</span>
-                    </div>
-                  </div>
-
-                  {/* Dynamic Mood Distribution Progress Bars */}
-                  {moodStats.total > 0 ? (
-                    <div className="space-y-2.5 pt-2">
-                      {/* Happy */}
-                      <div>
-                        <div className="flex justify-between text-xs text-slate-600 mb-1 font-medium">
-                          <span>Vui vẻ, hạnh phúc 😊</span>
-                          <span>{Math.round((moodStats.happy / moodStats.total) * 100)}%</span>
-                        </div>
-                        <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
-                          <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${(moodStats.happy / moodStats.total) * 100}%` }} />
-                        </div>
-                      </div>
-
-                      {/* Normal */}
-                      <div>
-                        <div className="flex justify-between text-xs text-slate-600 mb-1 font-medium">
-                          <span>Bình thường 😐</span>
-                          <span>{Math.round((moodStats.normal / moodStats.total) * 100)}%</span>
-                        </div>
-                        <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
-                          <div className="h-full bg-blue-400 rounded-full" style={{ width: `${(moodStats.normal / moodStats.total) * 100}%` }} />
-                        </div>
-                      </div>
-
-                      {/* Tired */}
-                      <div>
-                        <div className="flex justify-between text-xs text-slate-600 mb-1 font-medium">
-                          <span>Mệt mỏi 🥱</span>
-                          <span>{Math.round((moodStats.tired / moodStats.total) * 100)}%</span>
-                        </div>
-                        <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
-                          <div className="h-full bg-amber-400 rounded-full" style={{ width: `${(moodStats.tired / moodStats.total) * 100}%` }} />
-                        </div>
-                      </div>
-
-                      {/* Sad */}
-                      <div>
-                        <div className="flex justify-between text-xs text-slate-600 mb-1 font-medium">
-                          <span>Buồn bã 😢</span>
-                          <span>{Math.round((moodStats.sad / moodStats.total) * 100)}%</span>
-                        </div>
-                        <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
-                          <div className="h-full bg-rose-500 rounded-full" style={{ width: `${(moodStats.sad / moodStats.total) * 100}%` }} />
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    <p className="text-xs text-slate-400 text-center py-4">Chưa có ai trong gia đình cập nhật cảm xúc hôm nay.</p>
-                  )}
-                </div>
-
-                {/* Member specific analysis list */}
-                <div className="space-y-3">
-                  <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider px-1">Từng thành viên</h3>
 
                   <div className="space-y-3">
+                    {aiInsights.map((insight, idx) => (
+                      <div key={idx} className="p-3.5 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15 space-y-2">
+                        <div className="flex items-center gap-2 font-bold text-sm">
+                          {insight.type === "alert" ? (
+                            <AlertCircle className="w-4 h-4 text-amber-300 shrink-0" />
+                          ) : insight.type === "success" ? (
+                            <CheckCircle2 className="w-4 h-4 text-emerald-300 shrink-0" />
+                          ) : (
+                            <Activity className="w-4 h-4 text-teal-200 shrink-0" />
+                          )}
+                          <span>{insight.title}</span>
+                        </div>
+                        <p className="text-xs text-white/90 leading-relaxed">{insight.desc}</p>
+                        {insight.actionText && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (insight.actionText?.includes("Gọi")) {
+                                setActiveTab("calls");
+                              } else {
+                                setShowAddReminderForm(true);
+                              }
+                            }}
+                            className="mt-1 px-3 py-1.5 rounded-xl bg-white text-[#159447] text-xs font-bold transition-all cursor-pointer border-0 shadow-2xs hover:bg-emerald-50 active:scale-95"
+                          >
+                            {insight.actionText}
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Member Activity & Last Active Status List */}
+                <div className="space-y-3">
+                  <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider px-1">Trạng thái từng người thân</h3>
+                  <div className="space-y-3">
                     {members.map((m) => {
-                      const list = memberMoods[m.userId] || [];
-                      const latest = list[0];
+                      const act = memberActivityMap[m.userId];
+                      const lastCheckIn = act?.lastCheckIn;
+                      const hasCheckedInToday = lastCheckIn?.dateStr === todayStr;
                       const isCurrentUser = m.userId === user?.uid;
 
-                      let moodEmoji = "😐";
-                      let moodColor = "text-blue-500 bg-blue-50 border-blue-100";
-                      let moodText = "Chưa cập nhật";
-
-                      if (latest) {
-                        if (latest.mood === "happy") {
-                          moodEmoji = "😊";
-                          moodColor = "text-emerald-600 bg-emerald-50 border-emerald-100";
-                          moodText = "Vui vẻ";
-                        } else if (latest.mood === "normal") {
-                          moodEmoji = "😐";
-                          moodColor = "text-blue-600 bg-blue-50 border-blue-100";
-                          moodText = "Bình thường";
-                        } else if (latest.mood === "tired") {
-                          moodEmoji = "🥱";
-                          moodColor = "text-amber-600 bg-amber-50 border-amber-100";
-                          moodText = "Mệt mỏi";
-                        } else if (latest.mood === "sad") {
-                          moodEmoji = "😢";
-                          moodColor = "text-rose-600 bg-rose-50 border-rose-100";
-                          moodText = "Buồn bã";
-                        }
-                      }
-
                       return (
-                        <div key={m.id} className="p-4 bg-white border border-slate-150 rounded-2xl space-y-3.5 shadow-2xs">
-                          {/* Member Top Info */}
-                          <div className="flex items-center justify-between gap-3">
+                        <div key={m.id} className="p-4 bg-white border border-slate-150 rounded-2xl space-y-3 shadow-2xs">
+                          <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
-                              <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-sm bg-slate-50 text-slate-600 border border-slate-100`}>
-                                {m.displayName ? m.displayName.charAt(0).toUpperCase() : "U"}
+                              <div className="w-10 h-10 rounded-2xl bg-emerald-50 text-[#159447] font-bold flex items-center justify-center text-sm border border-emerald-100">
+                                {m.displayName?.charAt(0).toUpperCase() || "U"}
                               </div>
                               <div>
                                 <span className="font-bold text-slate-800 text-sm block">
-                                  {m.displayName} {isCurrentUser && <span className="text-xs font-normal text-slate-400 font-medium ml-1">(Bạn)</span>}
+                                  {m.displayName} {isCurrentUser && <span className="text-xs font-normal text-slate-400 ml-1">(Bạn)</span>}
                                 </span>
-                                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{m.relationship || (m.role === "parent" ? "Bố/Mẹ" : "Con")}</span>
+                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                                  {m.relationship || (m.role === "parent" ? "Bố/Mẹ" : "Con cái")}
+                                </span>
                               </div>
                             </div>
 
-                            {/* Status badge */}
-                            <span className={`px-2.5 py-1 rounded-xl text-xs font-bold border flex items-center gap-1 ${latest ? moodColor : "text-slate-400 bg-slate-50 border-slate-100"}`}>
-                              <span>{moodEmoji}</span>
-                              <span>{latest ? moodText : "Chưa cập nhật"}</span>
+                            {/* Status Badge */}
+                            <span className={`px-2.5 py-1 rounded-xl text-xs font-bold flex items-center gap-1.5 ${
+                              hasCheckedInToday
+                                ? "bg-emerald-50 text-emerald-700 border border-emerald-100"
+                                : "bg-amber-50 text-amber-700 border border-amber-100"
+                            }`}>
+                              <span className={`w-1.5 h-1.5 rounded-full ${hasCheckedInToday ? "bg-emerald-500" : "bg-amber-500 animate-pulse"}`} />
+                              <span>{hasCheckedInToday ? "Đã báo bình an" : "Chưa báo hôm nay"}</span>
                             </span>
                           </div>
 
-                          {/* Member mood trend history */}
-                          {list.length > 0 && (
-                            <div className="space-y-1.5 border-t border-slate-50 pt-2.5">
-                              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Lịch sử cảm xúc gần đây</span>
-                              <div className="flex items-center gap-2">
-                                {list.slice(0, 5).map((record) => {
-                                  let em = "😐";
-                                  if (record.mood === "happy") em = "😊";
-                                  else if (record.mood === "tired") em = "🥱";
-                                  else if (record.mood === "sad") em = "😢";
-                                  return (
-                                    <div key={record.id} className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-sm border border-slate-100/50" title={new Date(record.timestamp).toLocaleDateString("vi-VN")}>
-                                      {em}
-                                    </div>
-                                  );
-                                })}
+                          {/* Last active & recent timeline */}
+                          <div className="flex items-center justify-between text-xs border-t border-slate-50 pt-2.5 text-slate-500">
+                            <span className="flex items-center gap-1">
+                              <Clock className="w-3.5 h-3.5 text-slate-400" />
+                              Lần hoạt động gần nhất: <strong className="text-slate-700">{lastCheckIn ? lastCheckIn.dateStr : "Chưa có"}</strong>
+                            </span>
+                            {act?.history && act.history.length > 0 && (
+                              <div className="flex items-center gap-1">
+                                {act.history.slice(0, 4).map((h) => (
+                                  <span key={h.id} className="px-1.5 py-0.5 rounded-md bg-slate-100 text-[10px] font-mono text-slate-600">
+                                    {h.dateStr.slice(5)}
+                                  </span>
+                                ))}
                               </div>
-                            </div>
-                          )}
-
-                          {/* Friendly reminder / Alert based on latest mood */}
-                          {latest && (latest.mood === "tired" || latest.mood === "sad") && !isCurrentUser && (
-                            <div className="p-3 rounded-xl bg-amber-50/50 border border-amber-100 text-xs text-amber-800 font-medium space-y-1">
-                              <p className="font-bold flex items-center gap-1">
-                                <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" />
-                                <span>Gợi ý cho bạn</span>
-                              </p>
-                              <p className="leading-relaxed text-amber-700">
-                                {m.displayName} đang cảm thấy {moodText.toLowerCase()}. Bạn hãy gửi tin nhắn thoại hoặc gọi một cuộc gọi video hỏi thăm và động viên {m.displayName} nhé!
-                              </p>
-                            </div>
-                          )}
+                            )}
+                          </div>
                         </div>
                       );
                     })}
                   </div>
                 </div>
+
+                {/* Family Reminders List & Add Form */}
+                <div className="bg-white border border-slate-150 rounded-2xl p-5 space-y-4 shadow-2xs">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Bell className="w-4 h-4 text-blue-600" />
+                      <h3 className="text-sm font-bold text-slate-800">Lời nhắc gia đình</h3>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setShowAddReminderForm(!showAddReminderForm)}
+                      className="text-xs font-bold text-[#159447] hover:underline flex items-center gap-1 cursor-pointer border-0 bg-transparent"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>{showAddReminderForm ? "Hủy" : "Tạo lời nhắc"}</span>
+                    </button>
+                  </div>
+
+                  {showAddReminderForm && (
+                    <form onSubmit={handleAddReminder} className="flex gap-2 animate-in fade-in slide-in-from-top-1">
+                      <input
+                        type="text"
+                        value={newReminderText}
+                        onChange={(e) => setNewReminderText(e.target.value)}
+                        placeholder="Nhập nội dung lời nhắc..."
+                        className="flex-1 px-3.5 py-2 rounded-xl border border-slate-200 text-xs bg-slate-50 focus:bg-white focus:outline-none focus:border-[#159447]"
+                      />
+                      <button
+                        type="submit"
+                        className="px-4 py-2 rounded-xl bg-[#159447] text-white text-xs font-bold cursor-pointer border-0 shadow-2xs"
+                      >
+                        Thêm
+                      </button>
+                    </form>
+                  )}
+
+                  <div className="space-y-2">
+                    {reminders.map((r) => (
+                      <div
+                        key={r.id}
+                        onClick={() => toggleReminder(r.id)}
+                        className={`p-3 rounded-xl border transition-all cursor-pointer flex items-center justify-between gap-3 ${
+                          r.completed
+                            ? "bg-slate-50 border-slate-100 opacity-60 line-through"
+                            : "bg-white border-slate-200 hover:border-slate-300"
+                        }`}
+                      >
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <div className={`w-5 h-5 rounded-lg flex items-center justify-center border transition-colors ${
+                            r.completed ? "bg-blue-600 border-blue-600 text-white" : "border-slate-300 bg-white"
+                          }`}>
+                            {r.completed && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+                          </div>
+                          <span className="text-xs font-medium text-slate-800 truncate">{r.text}</span>
+                        </div>
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-100 text-slate-500 shrink-0">
+                          {r.memberName} • {r.time}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Activity Trend Chart / Weekly Graph */}
+                <div className="bg-white border border-slate-150 rounded-2xl p-5 space-y-3 shadow-2xs">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Thống kê tương tác theo tuần</span>
+                    <span className="text-xs font-bold text-emerald-600 flex items-center gap-1">
+                      <TrendingUp className="w-3.5 h-3.5" /> +15% tương tác
+                    </span>
+                  </div>
+                  <div className="h-28 flex items-end justify-between gap-2 pt-4 px-2">
+                    {[
+                      { day: "T2", height: "60%" },
+                      { day: "T3", height: "80%" },
+                      { day: "T4", height: "45%" },
+                      { day: "T5", height: "90%" },
+                      { day: "T6", height: "70%" },
+                      { day: "T7", height: "100%" },
+                      { day: "CN", height: "85%" },
+                    ].map((item, i) => (
+                      <div key={i} className="flex-1 flex flex-col items-center gap-1.5">
+                        <div className="w-full bg-emerald-100 rounded-lg hover:bg-[#159447] transition-all cursor-pointer relative group" style={{ height: item.height }}>
+                          <span className="absolute -top-6 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[9px] py-0.5 px-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">
+                            {item.height}
+                          </span>
+                        </div>
+                        <span className="text-[10px] font-bold text-slate-400">{item.day}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
               </div>
             </div>
           )}
