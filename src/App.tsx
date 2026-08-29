@@ -7,14 +7,12 @@ import { ParentDashboard } from "./components/parent/ParentDashboard";
 import { ChildDashboard } from "./components/child/ChildDashboard";
 import { FamilySettingsModal } from "./components/child/FamilySettingsModal";
 import { UserSettingsModal } from "./components/common/UserSettingsModal";
-import { GoogleMeetSetupModal } from "./components/common/GoogleMeetSetupModal";
 import { Heart } from "lucide-react";
 
 function MainApp() {
   const { user, profile, family, members, loading, refreshProfile } = useAuth();
   const [showSettings, setShowSettings] = useState<boolean>(false);
   const [showUserSettings, setShowUserSettings] = useState<boolean>(false);
-  const [showMeetSetup, setShowMeetSetup] = useState<boolean>(false);
 
   if (loading) {
     return (
@@ -45,7 +43,6 @@ function MainApp() {
       <Header
         onOpenFamilySettings={() => setShowSettings(true)}
         onOpenUserSettings={() => setShowUserSettings(true)}
-        onOpenMeetSetup={() => setShowMeetSetup(true)}
       />
       <main className="flex-1 flex flex-col bg-white min-h-0 h-full overflow-hidden">
         {isParent ? <ParentDashboard /> : <ChildDashboard />}
@@ -66,18 +63,6 @@ function MainApp() {
           family={family}
           onClose={() => setShowUserSettings(false)}
           onRefresh={refreshProfile}
-        />
-      )}
-
-      {showMeetSetup && family && (
-        <GoogleMeetSetupModal
-          familyId={family.id}
-          currentMeetUrl={family.fixedMeetUrl || ""}
-          onClose={() => setShowMeetSetup(false)}
-          onSavedAndJoin={() => {
-            setShowMeetSetup(false);
-            refreshProfile();
-          }}
         />
       )}
     </div>

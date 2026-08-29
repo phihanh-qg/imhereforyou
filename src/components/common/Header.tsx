@@ -9,13 +9,11 @@ import { LeaveFamilyModal } from "./LeaveFamilyModal";
 interface HeaderProps {
   onOpenFamilySettings?: () => void;
   onOpenUserSettings?: () => void;
-  onOpenMeetSetup?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
   onOpenFamilySettings,
   onOpenUserSettings,
-  onOpenMeetSetup,
 }) => {
   const { user, profile, family, signOut } = useAuth();
   const [copied, setCopied] = useState(false);
@@ -156,18 +154,7 @@ export const Header: React.FC<HeaderProps> = ({
                   </button>
                 )}
 
-                {onOpenMeetSetup && (
-                  <button
-                    onClick={() => {
-                      onOpenMeetSetup();
-                      setShowMenu(false);
-                    }}
-                    className="w-full text-left px-4 py-2.5 text-xs text-slate-700 hover:bg-[#E8F8F0] hover:text-[#2EBD6E] flex items-center gap-2.5 transition-colors font-medium"
-                  >
-                    <Video className="w-4 h-4 text-slate-400" />
-                    <span>Cài đặt cuộc gọi</span>
-                  </button>
-                )}
+
 
                 {onOpenUserSettings && (
                   <button
