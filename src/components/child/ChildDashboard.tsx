@@ -69,112 +69,11 @@ export const ChildDashboard: React.FC = () => {
 
   const [activeTab, setActiveTab] = useState<"home" | "family" | "calls" | "dashboard" | "settings">("home");
 
-  // Dynamic Mood Statistics
-  const moodStats = useMemo(() => {
-    if (!moods || moods.length === 0) {
-      return { happy: 0, normal: 0, tired: 0, sad: 0, total: 0 };
-    }
-    const stats = { happy: 0, normal: 0, tired: 0, sad: 0, total: moods.length };
-    moods.forEach((m) => {
-      if (m.mood === "happy") stats.happy++;
-      else if (m.mood === "normal") stats.normal++;
-      else if (m.mood === "tired") stats.tired++;
-      else if (m.mood === "sad") stats.sad++;
-    });
-    return stats;
-  }, [moods]);
-
-  // Group moods by member to show member-specific emotional analysis
-  const memberMoods = useMemo(() => {
-    const map: Record<string, MoodRecord[]> = {};
-    // Sort moods chronologically (newest first)
-    const sorted = [...moods].sort(
-      (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-    );
-    sorted.forEach((m) => {
-      const uId = m.userId;
-      if (!map[uId]) map[uId] = [];
-      map[uId].push(m);
-    });
-    return map;
-  }, [moods]);
-
-  // Dynamic AI Advice based on mood calculations
-  const familyEmotionalVibe = useMemo(() => {
-    if (moodStats.total === 0) return "Chưa có dữ liệu";
-    const { happy, normal, tired, sad } = moodStats;
-    if (sad + tired > happy) return "Cần chia sẻ & quan tâm ⚠️";
-    if (happy > normal + tired + sad) return "Tràn ngập niềm vui 🎉";
-    return "Ổn định & Bình an 💚";
-  }, [moodStats]);
-
   // Google Meet Call Tab states
   const [meetUrlInput, setMeetUrlInput] = useState(family?.fixedMeetUrl || "");
   const [isEditingMeet, setIsEditingMeet] = useState(false);
   const [isSavingMeet, setIsSavingMeet] = useState(false);
   const [isAutoCreatingMeet, setIsAutoCreatingMeet] = useState(false);
-
-  useEffect(() => {
-    if (family?.fixedMeetUrl) {
-      setMeetUrlInput(family.fixedMeetUrl);
-    }
-  }, [family?.fixedMeetUrl]);
-
-  const handleSaveMeetUrlTab = async () => {
-    const trimmed = meetUrlInput.trim();
-    if (!trimmed) {
-      showToast("Vui lòng nhập link Google Meet");
-      return;
-    }
-    const normalized = normalizeGoogleMeetUrl(trimmed);
-    if (!normalized) {
-      showToast("Link không đúng định dạng Google Meet");
-      return;
-    }
-    setIsSavingMeet(true);
-    try {
-      await updateFamilyFixedMeetUrl(familyId, normalized);
-      showToast("Đã cập nhật link phòng thành công ✓");
-      setIsEditingMeet(false);
-      refreshProfile();
-    } catch (err) {
-      showToast("Lỗi khi lưu link");
-    } finally {
-      setIsSavingMeet(false);
-    }
-  };
-
-  const handleAutoCreateMeetTab = async () => {
-    setIsAutoCreatingMeet(true);
-    try {
-      const eventResult = await createDirectCalendarEvent({
-        title: "Phòng Gọi Video Gia Đình (Google Meet)",
-        description: "Phòng gọi video Google Meet chính thức cố định của gia đình.",
-        startTime: new Date(),
-        durationMinutes: 60,
-        createMeetLink: true,
-        recurrence: ["RRULE:FREQ=WEEKLY;BYDAY=SU,MO,TU,WE,TH,FR,SA"],
-      });
-
-      if (eventResult.meetLink) {
-        const normalized = normalizeGoogleMeetUrl(eventResult.meetLink);
-        if (normalized) {
-          setMeetUrlInput(normalized);
-          await updateFamilyFixedMeetUrl(familyId, normalized);
-          showToast("Đã tự động tạo phòng thành công ✓");
-          refreshProfile();
-          return;
-        }
-      }
-      window.open("https://meet.google.com/new", "_blank", "noopener,noreferrer");
-      showToast("Hãy sao chép link và dán vào ô bên dưới.");
-    } catch (err) {
-      window.open("https://meet.google.com/new", "_blank", "noopener,noreferrer");
-      showToast("Đã mở Google Meet để tạo phòng!");
-    } finally {
-      setIsAutoCreatingMeet(false);
-    }
-  };
 
   // Check-in & state
   const [hasChildCheckedInToday, setHasChildCheckedInToday] = useState<boolean>(false);
@@ -219,6 +118,44 @@ export const ChildDashboard: React.FC = () => {
   const [dailyReminderToggle, setDailyReminderToggle] = useState<boolean>(true);
   const [emergencyAlertToggle, setEmergencyAlertToggle] = useState<boolean>(true);
   const [isSavingSettings, setIsSavingSettings] = useState(false);
+
+  // Dynamic Mood Statistics
+  const moodStats = useMemo(() => {
+    if (!moods || moods.length === 0) {
+      return { happy: 0, normal: 0, tired: 0, sad: 0, total: 0 };
+    }
+    const stats = { happy: 0, normal: 0, tired: 0, sad: 0, total: moods.length };
+    moods.forEach((m) => {
+      if (m.mood === "happy") stats.happy++;
+      else if (m.mood === "normal") stats.normal++;
+      else if (m.mood === "tired") stats.tired++;
+      else if (m.mood === "sad") stats.sad++;
+    });
+    return stats;
+  }, [moods]);
+
+  // Group moods by member to show member-specific emotional analysis
+  const memberMoods = useMemo(() => {
+    const map: Record<string, MoodRecord[]> = {};
+    const sorted = [...moods].sort(
+      (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    );
+    sorted.forEach((m) => {
+      const uId = m.userId;
+      if (!map[uId]) map[uId] = [];
+      map[uId].push(m);
+    });
+    return map;
+  }, [moods]);
+
+  // Dynamic AI Advice based on mood calculations
+  const familyEmotionalVibe = useMemo(() => {
+    if (moodStats.total === 0) return "Chưa có dữ liệu";
+    const { happy, normal, tired, sad } = moodStats;
+    if (sad + tired > happy) return "Cần chia sẻ & quan tâm ⚠️";
+    if (happy > normal + tired + sad) return "Tràn ngập niềm vui 🎉";
+    return "Ổn định & Bình an 💚";
+  }, [moodStats]);
 
   useEffect(() => {
     if (profile) {
@@ -320,6 +257,68 @@ export const ChildDashboard: React.FC = () => {
     if (!targetUrl) { setShowMeetSetupModal(true); return; }
     showToast("Đang vào Google Meet...");
     try { await startFamilyMeeting(familyId, user.uid, profile?.displayName || "Con", "child", family?.inviteCode, targetUrl); } catch {}
+  };
+
+  useEffect(() => {
+    if (family?.fixedMeetUrl) {
+      setMeetUrlInput(family.fixedMeetUrl);
+    }
+  }, [family?.fixedMeetUrl]);
+
+  const handleSaveMeetUrlTab = async () => {
+    const trimmed = meetUrlInput.trim();
+    if (!trimmed) {
+      showToast("Vui lòng nhập link Google Meet");
+      return;
+    }
+    const normalized = normalizeGoogleMeetUrl(trimmed);
+    if (!normalized) {
+      showToast("Link không đúng định dạng Google Meet");
+      return;
+    }
+    setIsSavingMeet(true);
+    try {
+      await updateFamilyFixedMeetUrl(familyId, normalized);
+      showToast("Đã cập nhật link phòng thành công ✓");
+      setIsEditingMeet(false);
+      refreshProfile();
+    } catch (err) {
+      showToast("Lỗi khi lưu link");
+    } finally {
+      setIsSavingMeet(false);
+    }
+  };
+
+  const handleAutoCreateMeetTab = async () => {
+    setIsAutoCreatingMeet(true);
+    try {
+      const eventResult = await createDirectCalendarEvent({
+        title: "Phòng Gọi Video Gia Đình (Google Meet)",
+        description: "Phòng gọi video Google Meet chính thức cố định của gia đình.",
+        startTime: new Date(),
+        durationMinutes: 60,
+        createMeetLink: true,
+        recurrence: ["RRULE:FREQ=WEEKLY;BYDAY=SU,MO,TU,WE,TH,FR,SA"],
+      });
+
+      if (eventResult.meetLink) {
+        const normalized = normalizeGoogleMeetUrl(eventResult.meetLink);
+        if (normalized) {
+          setMeetUrlInput(normalized);
+          await updateFamilyFixedMeetUrl(familyId, normalized);
+          showToast("Đã tự động tạo phòng thành công ✓");
+          refreshProfile();
+          return;
+        }
+      }
+      window.open("https://meet.google.com/new", "_blank", "noopener,noreferrer");
+      showToast("Hãy sao chép link và dán vào ô bên dưới.");
+    } catch (err) {
+      window.open("https://meet.google.com/new", "_blank", "noopener,noreferrer");
+      showToast("Đã mở Google Meet để tạo phòng!");
+    } finally {
+      setIsAutoCreatingMeet(false);
+    }
   };
 
   const navItems = [
