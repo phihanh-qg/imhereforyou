@@ -24,7 +24,10 @@ import {
   hasConfiguredMeetUrl,
   getFamilyFixedMeetUrl,
   ensureOrAutoCreateFamilyFixedMeetUrl,
+  updateFamilyFixedMeetUrl,
+  normalizeGoogleMeetUrl,
 } from "../../services/meetingService";
+import { createDirectCalendarEvent } from "../../services/googleWorkspaceService";
 import { saveUserProfile } from "../../services/familyService";
 import { doc, updateDoc } from "firebase/firestore";
 import { db } from "../../lib/firebase";
@@ -55,12 +58,123 @@ import {
   Settings,
   PlusCircle,
   UserPlus,
+  LayoutDashboard,
+  Smile,
+  Activity,
+  BarChart3,
 } from "lucide-react";
 
 export const ChildDashboard: React.FC = () => {
   const { user, profile, family, members, refreshProfile, signOut } = useAuth();
 
-  const [activeTab, setActiveTab] = useState<"home" | "family" | "settings">("home");
+  const [activeTab, setActiveTab] = useState<"home" | "family" | "calls" | "dashboard" | "settings">("home");
+
+  // Dynamic Mood Statistics
+  const moodStats = useMemo(() => {
+    if (!moods || moods.length === 0) {
+      return { happy: 0, normal: 0, tired: 0, sad: 0, total: 0 };
+    }
+    const stats = { happy: 0, normal: 0, tired: 0, sad: 0, total: moods.length };
+    moods.forEach((m) => {
+      if (m.mood === "happy") stats.happy++;
+      else if (m.mood === "normal") stats.normal++;
+      else if (m.mood === "tired") stats.tired++;
+      else if (m.mood === "sad") stats.sad++;
+    });
+    return stats;
+  }, [moods]);
+
+  // Group moods by member to show member-specific emotional analysis
+  const memberMoods = useMemo(() => {
+    const map: Record<string, MoodRecord[]> = {};
+    // Sort moods chronologically (newest first)
+    const sorted = [...moods].sort(
+      (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    );
+    sorted.forEach((m) => {
+      const uId = m.userId;
+      if (!map[uId]) map[uId] = [];
+      map[uId].push(m);
+    });
+    return map;
+  }, [moods]);
+
+  // Dynamic AI Advice based on mood calculations
+  const familyEmotionalVibe = useMemo(() => {
+    if (moodStats.total === 0) return "Chưa có dữ liệu";
+    const { happy, normal, tired, sad } = moodStats;
+    if (sad + tired > happy) return "Cần chia sẻ & quan tâm ⚠️";
+    if (happy > normal + tired + sad) return "Tràn ngập niềm vui 🎉";
+    return "Ổn định & Bình an 💚";
+  }, [moodStats]);
+
+  // Google Meet Call Tab states
+  const [meetUrlInput, setMeetUrlInput] = useState(family?.fixedMeetUrl || "");
+  const [isEditingMeet, setIsEditingMeet] = useState(false);
+  const [isSavingMeet, setIsSavingMeet] = useState(false);
+  const [isAutoCreatingMeet, setIsAutoCreatingMeet] = useState(false);
+
+  useEffect(() => {
+    if (family?.fixedMeetUrl) {
+      setMeetUrlInput(family.fixedMeetUrl);
+    }
+  }, [family?.fixedMeetUrl]);
+
+  const handleSaveMeetUrlTab = async () => {
+    const trimmed = meetUrlInput.trim();
+    if (!trimmed) {
+      showToast("Vui lòng nhập link Google Meet");
+      return;
+    }
+    const normalized = normalizeGoogleMeetUrl(trimmed);
+    if (!normalized) {
+      showToast("Link không đúng định dạng Google Meet");
+      return;
+    }
+    setIsSavingMeet(true);
+    try {
+      await updateFamilyFixedMeetUrl(familyId, normalized);
+      showToast("Đã cập nhật link phòng thành công ✓");
+      setIsEditingMeet(false);
+      refreshProfile();
+    } catch (err) {
+      showToast("Lỗi khi lưu link");
+    } finally {
+      setIsSavingMeet(false);
+    }
+  };
+
+  const handleAutoCreateMeetTab = async () => {
+    setIsAutoCreatingMeet(true);
+    try {
+      const eventResult = await createDirectCalendarEvent({
+        title: "Phòng Gọi Video Gia Đình (Google Meet)",
+        description: "Phòng gọi video Google Meet chính thức cố định của gia đình.",
+        startTime: new Date(),
+        durationMinutes: 60,
+        createMeetLink: true,
+        recurrence: ["RRULE:FREQ=WEEKLY;BYDAY=SU,MO,TU,WE,TH,FR,SA"],
+      });
+
+      if (eventResult.meetLink) {
+        const normalized = normalizeGoogleMeetUrl(eventResult.meetLink);
+        if (normalized) {
+          setMeetUrlInput(normalized);
+          await updateFamilyFixedMeetUrl(familyId, normalized);
+          showToast("Đã tự động tạo phòng thành công ✓");
+          refreshProfile();
+          return;
+        }
+      }
+      window.open("https://meet.google.com/new", "_blank", "noopener,noreferrer");
+      showToast("Hãy sao chép link và dán vào ô bên dưới.");
+    } catch (err) {
+      window.open("https://meet.google.com/new", "_blank", "noopener,noreferrer");
+      showToast("Đã mở Google Meet để tạo phòng!");
+    } finally {
+      setIsAutoCreatingMeet(false);
+    }
+  };
 
   // Check-in & state
   const [hasChildCheckedInToday, setHasChildCheckedInToday] = useState<boolean>(false);
@@ -211,6 +325,8 @@ export const ChildDashboard: React.FC = () => {
   const navItems = [
     { id: "home" as const, label: "Trang chủ", icon: Home },
     { id: "family" as const, label: "Người thân", icon: Users },
+    { id: "calls" as const, label: "Cuộc gọi", icon: Video },
+    { id: "dashboard" as const, label: "Phân tích cảm xúc", icon: LayoutDashboard },
     { id: "settings" as const, label: "Cài đặt", icon: Settings },
   ];
 
@@ -339,6 +455,398 @@ export const ChildDashboard: React.FC = () => {
           {activeTab === "family" && (
             <div className="flex-1 flex flex-col min-h-0 overflow-hidden px-2 sm:px-4 py-2">
               <FamilyMembersView parentName={parentName} isParentView={false} />
+            </div>
+          )}
+
+          {/* TAB: CALLS */}
+          {activeTab === "calls" && (
+            <div className="flex-1 overflow-y-auto px-4 sm:px-8 py-6">
+              <div className="max-w-lg mx-auto space-y-6">
+                <h2 className="text-xl font-bold text-[#17191c] tracking-tight">Cuộc gọi gia đình</h2>
+
+                {/* Main Action Call Card */}
+                <div className="p-6 rounded-3xl bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-100/80 text-center space-y-4 shadow-sm">
+                  <div className="mx-auto w-16 h-16 rounded-2xl bg-[#E8F8F0] text-[#159447] flex items-center justify-center shadow-2xs">
+                    <Video className="w-8 h-8" />
+                  </div>
+                  <div className="space-y-1">
+                    <h3 className="text-lg font-bold text-slate-800">
+                      {activeMeeting?.isOpen ? "Cuộc gọi đang diễn ra!" : "Google Meet cố định"}
+                    </h3>
+                    <p className="text-xs text-slate-500 max-w-sm mx-auto leading-relaxed">
+                      {activeMeeting?.isOpen 
+                        ? "Mọi người đang ở trong phòng họp mặt. Nhấn tham gia ngay để gặp mặt gia đình!" 
+                        : "Gọi video cho gia đình bất cứ lúc nào bằng đường dẫn Google Meet cố định bên dưới."}
+                    </p>
+                  </div>
+
+                  {/* Active Call / Call Now button */}
+                  <button
+                    type="button"
+                    onClick={handleJoinMeeting}
+                    className={`w-full py-3.5 rounded-2xl font-bold text-base transition-all duration-200 cursor-pointer border-0 shadow-sm flex items-center justify-center gap-2 active:scale-[0.98] ${
+                      activeMeeting?.isOpen
+                        ? "bg-[#159447] text-white hover:bg-[#12803c] animate-pulse"
+                        : "bg-[#28b463] text-white hover:bg-[#239e56]"
+                    }`}
+                  >
+                    <Video className="w-5 h-5 shrink-0" />
+                    <span>{activeMeeting?.isOpen ? "Tham gia cuộc họp" : "Gọi ngay"}</span>
+                  </button>
+
+                  {/* Auto Create Room Button */}
+                  <button
+                    type="button"
+                    disabled={isAutoCreatingMeet}
+                    onClick={handleAutoCreateMeetTab}
+                    className="w-full py-3 rounded-2xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-bold text-sm transition-all cursor-pointer flex items-center justify-center gap-2"
+                  >
+                    <span>Tạo phòng ngay</span>
+                  </button>
+                </div>
+
+                {/* Edit Link Card */}
+                <div className="bg-[#f9fafb] rounded-2xl border border-[#e8eaed] p-5 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-sm font-bold text-[#17191c] tracking-tight">Đường dẫn Google Meet</h3>
+                    <button
+                      type="button"
+                      onClick={() => setIsEditingMeet(!isEditingMeet)}
+                      className="text-xs font-bold text-[#159447] hover:underline cursor-pointer border-0 bg-transparent"
+                    >
+                      {isEditingMeet ? "Hủy" : "Đổi link phòng"}
+                    </button>
+                  </div>
+
+                  {isEditingMeet ? (
+                    <div className="space-y-3">
+                      <input
+                        type="text"
+                        value={meetUrlInput}
+                        onChange={(e) => setMeetUrlInput(e.target.value)}
+                        placeholder="Dán link https://meet.google.com/xxx-yyyy-zzz"
+                        className="w-full text-xs font-mono p-3 rounded-xl border border-emerald-300 bg-white focus:outline-none focus:ring-2 focus:ring-[#159447]"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleSaveMeetUrlTab}
+                        disabled={isSavingMeet}
+                        className="w-full py-2.5 rounded-xl bg-[#159447] hover:bg-[#12803c] text-white font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer border-0"
+                      >
+                        <span>Lưu & Cập nhật link</span>
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="p-3 bg-white border border-slate-200/80 rounded-xl flex items-center justify-between gap-3">
+                      <span className="font-mono text-xs text-slate-700 truncate font-medium">
+                        {family?.fixedMeetUrl || "Chưa thiết lập link phòng"}
+                      </span>
+                      {family?.fixedMeetUrl && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            navigator.clipboard.writeText(family.fixedMeetUrl);
+                            showToast("Đã chép link phòng ✓");
+                          }}
+                          className="px-2.5 py-1.5 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-600 text-xs font-bold transition-all border-0 cursor-pointer"
+                        >
+                          Chép link
+                        </button>
+                      )}
+                    </div>
+                  )}
+
+                  <p className="text-[11px] text-[#8b9096] leading-relaxed">
+                    Dùng một link Google Meet cố định giúp người cao tuổi trong gia đình chỉ cần mở app bấm nút là kết nối được ngay, không sợ bị nhầm mã phòng.
+                  </p>
+                </div>
+
+              </div>
+            </div>
+          )}
+
+          {/* TAB: CALLS */}
+          {activeTab === "calls" && (
+            <div className="flex-1 overflow-y-auto px-4 sm:px-8 py-6">
+              <div className="max-w-lg mx-auto space-y-6">
+                <h2 className="text-xl font-bold text-[#17191c] tracking-tight">Cuộc gọi gia đình</h2>
+
+                {/* Main Action Call Card */}
+                <div className="p-6 rounded-3xl bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-100/80 text-center space-y-4 shadow-sm">
+                  <div className="mx-auto w-16 h-16 rounded-2xl bg-[#E8F8F0] text-[#159447] flex items-center justify-center shadow-2xs">
+                    <Video className="w-8 h-8" />
+                  </div>
+                  <div className="space-y-1">
+                    <h3 className="text-lg font-bold text-slate-800">
+                      {activeMeeting?.isOpen ? "Cuộc gọi đang diễn ra!" : "Google Meet cố định"}
+                    </h3>
+                    <p className="text-xs text-slate-500 max-w-sm mx-auto leading-relaxed">
+                      {activeMeeting?.isOpen 
+                        ? "Mọi người đang ở trong phòng họp mặt. Nhấn tham gia ngay để gặp mặt gia đình!" 
+                        : "Gọi video cho gia đình bất cứ lúc nào bằng đường dẫn Google Meet cố định bên dưới."}
+                    </p>
+                  </div>
+
+                  {/* Active Call / Call Now button */}
+                  <button
+                    type="button"
+                    onClick={handleJoinMeeting}
+                    className={`w-full py-3.5 rounded-2xl font-bold text-base transition-all duration-200 cursor-pointer border-0 shadow-sm flex items-center justify-center gap-2 active:scale-[0.98] ${
+                      activeMeeting?.isOpen
+                        ? "bg-[#159447] text-white hover:bg-[#12803c] animate-pulse"
+                        : "bg-[#28b463] text-white hover:bg-[#239e56]"
+                    }`}
+                  >
+                    <Video className="w-5 h-5 shrink-0" />
+                    <span>{activeMeeting?.isOpen ? "Tham gia cuộc họp" : "Gọi ngay"}</span>
+                  </button>
+
+                  {/* Auto Create Room Button */}
+                  <button
+                    type="button"
+                    disabled={isAutoCreatingMeet}
+                    onClick={handleAutoCreateMeetTab}
+                    className="w-full py-3 rounded-2xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-bold text-sm transition-all cursor-pointer flex items-center justify-center gap-2"
+                  >
+                    <span>Tạo phòng ngay</span>
+                  </button>
+                </div>
+
+                {/* Edit Link Card */}
+                <div className="bg-[#f9fafb] rounded-2xl border border-[#e8eaed] p-5 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-sm font-bold text-[#17191c] tracking-tight">Đường dẫn Google Meet</h3>
+                    <button
+                      type="button"
+                      onClick={() => setIsEditingMeet(!isEditingMeet)}
+                      className="text-xs font-bold text-[#159447] hover:underline cursor-pointer border-0 bg-transparent"
+                    >
+                      {isEditingMeet ? "Hủy" : "Đổi link phòng"}
+                    </button>
+                  </div>
+
+                  {isEditingMeet ? (
+                    <div className="space-y-3">
+                      <input
+                        type="text"
+                        value={meetUrlInput}
+                        onChange={(e) => setMeetUrlInput(e.target.value)}
+                        placeholder="Dán link https://meet.google.com/xxx-yyyy-zzz"
+                        className="w-full text-xs font-mono p-3 rounded-xl border border-emerald-300 bg-white focus:outline-none focus:ring-2 focus:ring-[#159447]"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleSaveMeetUrlTab}
+                        disabled={isSavingMeet}
+                        className="w-full py-2.5 rounded-xl bg-[#159447] hover:bg-[#12803c] text-white font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer border-0"
+                      >
+                        <span>Lưu & Cập nhật link</span>
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="p-3 bg-white border border-slate-200/80 rounded-xl flex items-center justify-between gap-3">
+                      <span className="font-mono text-xs text-slate-700 truncate font-medium">
+                        {family?.fixedMeetUrl || "Chưa thiết lập link phòng"}
+                      </span>
+                      {family?.fixedMeetUrl && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            navigator.clipboard.writeText(family.fixedMeetUrl);
+                            showToast("Đã chép link phòng ✓");
+                          }}
+                          className="px-2.5 py-1.5 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-600 text-xs font-bold transition-all border-0 cursor-pointer"
+                        >
+                          Chép link
+                        </button>
+                      )}
+                    </div>
+                  )}
+
+                  <p className="text-[11px] text-[#8b9096] leading-relaxed">
+                    Dùng một link Google Meet cố định giúp người cao tuổi trong gia đình chỉ cần mở app bấm nút là kết nối được ngay, không sợ bị nhầm mã phòng.
+                  </p>
+                </div>
+
+              </div>
+            </div>
+          )}
+
+          {/* TAB: EMOTION ANALYSIS DASHBOARD */}
+          {activeTab === "dashboard" && (
+            <div className="flex-1 overflow-y-auto px-4 sm:px-8 py-6">
+              <div className="max-w-lg mx-auto space-y-6">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-emerald-50 text-[#159447] flex items-center justify-center shrink-0">
+                    <LayoutDashboard className="w-4 h-4" />
+                  </div>
+                  <h2 className="text-xl font-bold text-[#17191c] tracking-tight">Phân tích cảm xúc gia đình</h2>
+                </div>
+
+                {/* Vibe Summary Card */}
+                <div className="p-5 rounded-2xl bg-white border border-slate-150 shadow-2xs space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Trạng thái chung</span>
+                    <span className="text-xs font-semibold text-slate-500">Dựa trên lịch sử cập nhật</span>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-full bg-[#E8F8F0] flex items-center justify-center shrink-0">
+                      <Smile className="w-6 h-6 text-[#159447]" />
+                    </div>
+                    <div>
+                      <span className="text-xs text-slate-500 block">Bầu không khí hôm nay</span>
+                      <span className="text-base font-black text-slate-800">{familyEmotionalVibe}</span>
+                    </div>
+                  </div>
+
+                  {/* Dynamic Mood Distribution Progress Bars */}
+                  {moodStats.total > 0 ? (
+                    <div className="space-y-2.5 pt-2">
+                      {/* Happy */}
+                      <div>
+                        <div className="flex justify-between text-xs text-slate-600 mb-1 font-medium">
+                          <span>Vui vẻ, hạnh phúc 😊</span>
+                          <span>{Math.round((moodStats.happy / moodStats.total) * 100)}%</span>
+                        </div>
+                        <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
+                          <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${(moodStats.happy / moodStats.total) * 100}%` }} />
+                        </div>
+                      </div>
+
+                      {/* Normal */}
+                      <div>
+                        <div className="flex justify-between text-xs text-slate-600 mb-1 font-medium">
+                          <span>Bình thường 😐</span>
+                          <span>{Math.round((moodStats.normal / moodStats.total) * 100)}%</span>
+                        </div>
+                        <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
+                          <div className="h-full bg-blue-400 rounded-full" style={{ width: `${(moodStats.normal / moodStats.total) * 100}%` }} />
+                        </div>
+                      </div>
+
+                      {/* Tired */}
+                      <div>
+                        <div className="flex justify-between text-xs text-slate-600 mb-1 font-medium">
+                          <span>Mệt mỏi 🥱</span>
+                          <span>{Math.round((moodStats.tired / moodStats.total) * 100)}%</span>
+                        </div>
+                        <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
+                          <div className="h-full bg-amber-400 rounded-full" style={{ width: `${(moodStats.tired / moodStats.total) * 100}%` }} />
+                        </div>
+                      </div>
+
+                      {/* Sad */}
+                      <div>
+                        <div className="flex justify-between text-xs text-slate-600 mb-1 font-medium">
+                          <span>Buồn bã 😢</span>
+                          <span>{Math.round((moodStats.sad / moodStats.total) * 100)}%</span>
+                        </div>
+                        <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
+                          <div className="h-full bg-rose-500 rounded-full" style={{ width: `${(moodStats.sad / moodStats.total) * 100}%` }} />
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-xs text-slate-400 text-center py-4">Chưa có ai trong gia đình cập nhật cảm xúc hôm nay.</p>
+                  )}
+                </div>
+
+                {/* Member specific analysis list */}
+                <div className="space-y-3">
+                  <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider px-1">Từng thành viên</h3>
+
+                  <div className="space-y-3">
+                    {members.map((m) => {
+                      const list = memberMoods[m.userId] || [];
+                      const latest = list[0];
+                      const isCurrentUser = m.userId === user?.uid;
+
+                      let moodEmoji = "😐";
+                      let moodColor = "text-blue-500 bg-blue-50 border-blue-100";
+                      let moodText = "Chưa cập nhật";
+
+                      if (latest) {
+                        if (latest.mood === "happy") {
+                          moodEmoji = "😊";
+                          moodColor = "text-emerald-600 bg-emerald-50 border-emerald-100";
+                          moodText = "Vui vẻ";
+                        } else if (latest.mood === "normal") {
+                          moodEmoji = "😐";
+                          moodColor = "text-blue-600 bg-blue-50 border-blue-100";
+                          moodText = "Bình thường";
+                        } else if (latest.mood === "tired") {
+                          moodEmoji = "🥱";
+                          moodColor = "text-amber-600 bg-amber-50 border-amber-100";
+                          moodText = "Mệt mỏi";
+                        } else if (latest.mood === "sad") {
+                          moodEmoji = "😢";
+                          moodColor = "text-rose-600 bg-rose-50 border-rose-100";
+                          moodText = "Buồn bã";
+                        }
+                      }
+
+                      return (
+                        <div key={m.id} className="p-4 bg-white border border-slate-150 rounded-2xl space-y-3.5 shadow-2xs">
+                          {/* Member Top Info */}
+                          <div className="flex items-center justify-between gap-3">
+                            <div className="flex items-center gap-3">
+                              <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-sm bg-slate-50 text-slate-600 border border-slate-100`}>
+                                {m.displayName ? m.displayName.charAt(0).toUpperCase() : "U"}
+                              </div>
+                              <div>
+                                <span className="font-bold text-slate-800 text-sm block">
+                                  {m.displayName} {isCurrentUser && <span className="text-xs font-normal text-slate-400 font-medium ml-1">(Bạn)</span>}
+                                </span>
+                                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{m.relationship || (m.role === "parent" ? "Bố/Mẹ" : "Con")}</span>
+                              </div>
+                            </div>
+
+                            {/* Status badge */}
+                            <span className={`px-2.5 py-1 rounded-xl text-xs font-bold border flex items-center gap-1 ${latest ? moodColor : "text-slate-400 bg-slate-50 border-slate-100"}`}>
+                              <span>{moodEmoji}</span>
+                              <span>{latest ? moodText : "Chưa cập nhật"}</span>
+                            </span>
+                          </div>
+
+                          {/* Member mood trend history */}
+                          {list.length > 0 && (
+                            <div className="space-y-1.5 border-t border-slate-50 pt-2.5">
+                              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Lịch sử cảm xúc gần đây</span>
+                              <div className="flex items-center gap-2">
+                                {list.slice(0, 5).map((record) => {
+                                  let em = "😐";
+                                  if (record.mood === "happy") em = "😊";
+                                  else if (record.mood === "tired") em = "🥱";
+                                  else if (record.mood === "sad") em = "😢";
+                                  return (
+                                    <div key={record.id} className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-sm border border-slate-100/50" title={new Date(record.timestamp).toLocaleDateString("vi-VN")}>
+                                      {em}
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Friendly reminder / Alert based on latest mood */}
+                          {latest && (latest.mood === "tired" || latest.mood === "sad") && !isCurrentUser && (
+                            <div className="p-3 rounded-xl bg-amber-50/50 border border-amber-100 text-xs text-amber-800 font-medium space-y-1">
+                              <p className="font-bold flex items-center gap-1">
+                                <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" />
+                                <span>Gợi ý cho bạn</span>
+                              </p>
+                              <p className="leading-relaxed text-amber-700">
+                                {m.displayName} đang cảm thấy {moodText.toLowerCase()}. Bạn hãy gửi tin nhắn thoại hoặc gọi một cuộc gọi video hỏi thăm và động viên {m.displayName} nhé!
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
             </div>
           )}
 
