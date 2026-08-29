@@ -195,20 +195,62 @@ export const ChildDashboard: React.FC = () => {
     ];
   }, [selectedTimeRange]);
 
-  // Per-member last active time & activity history map
+  // Fallback 3-member family list for realistic Demo Presentations
+  const displayMembers = useMemo(() => {
+    if (members.length >= 2) return members;
+    return [
+      {
+        id: "demo_user",
+        userId: user?.uid || "demo_user",
+        displayName: profile?.displayName || "Bạn (Minh Anh)",
+        role: "child" as UserRole,
+        relationship: "Con cái",
+      },
+      {
+        id: "demo_mom",
+        userId: "demo_mom_uid",
+        displayName: "Mẹ Thu",
+        role: "parent" as UserRole,
+        relationship: "Mẹ",
+      },
+      {
+        id: "demo_dad",
+        userId: "demo_dad_uid",
+        displayName: "Bố Hùng",
+        role: "parent" as UserRole,
+        relationship: "Bố",
+      },
+    ];
+  }, [members, user, profile]);
+
+  // Per-member last active time & activity history map with realistic fallbacks
   const memberActivityMap = useMemo(() => {
     const map: Record<string, { lastCheckIn?: CheckInRecord; history: CheckInRecord[] }> = {};
-    members.forEach((m) => {
+    displayMembers.forEach((m) => {
       const mCheckIns = checkIns
         .filter((c) => c.userId === m.userId || c.parentId === m.userId)
         .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+      
+      const defaultCheckIn: CheckInRecord = {
+        id: `demo_ck_${m.id}`,
+        userId: m.userId,
+        userName: m.displayName,
+        userRole: m.role,
+        familyId: familyId || "demo_family",
+        dateStr: todayStr,
+        timestamp: new Date().toISOString(),
+        timeWindow: "sáng",
+        note: "Đã báo bình an",
+        status: "success",
+      };
+
       map[m.userId] = {
-        lastCheckIn: mCheckIns[0],
-        history: mCheckIns,
+        lastCheckIn: mCheckIns[0] || defaultCheckIn,
+        history: mCheckIns.length > 0 ? mCheckIns : [defaultCheckIn],
       };
     });
     return map;
-  }, [members, checkIns]);
+  }, [displayMembers, checkIns, todayStr, familyId]);
 
   // Dynamic AI Insights
   const aiInsights = useMemo(() => {
@@ -844,11 +886,11 @@ export const ChildDashboard: React.FC = () => {
                       </div>
 
                       <div className="space-y-3">
-                        {members.map((m) => {
+                        {displayMembers.map((m) => {
                           const act = memberActivityMap[m.userId];
                           const lastCheckIn = act?.lastCheckIn;
                           const hasCheckedInToday = lastCheckIn?.dateStr === todayStr;
-                          const isCurrentUser = m.userId === user?.uid;
+                          const isCurrentUser = m.userId === user?.uid || m.id === "demo_user";
 
                           return (
                             <div key={m.id} className="p-4 rounded-xl border border-slate-100 hover:border-slate-200 transition-all flex items-center justify-between gap-4">
@@ -932,6 +974,32 @@ export const ChildDashboard: React.FC = () => {
             <div className="flex-1 overflow-y-auto px-4 sm:px-8 py-6 pb-20 md:pb-6">
               <div className="max-w-lg mx-auto space-y-6">
                 <h2 className="text-xl font-bold text-[#17191c] tracking-tight">Cài đặt</h2>
+
+                {/* Demo Helper Box for Video Presentations */}
+                <div className="bg-[#f0faf4] border border-[#d1f0de] rounded-2xl p-4 space-y-2">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <h4 className="text-xs font-bold text-[#159447]">Chế độ Demo Quay Video</h4>
+                      <p className="text-[11px] text-slate-600 my-0">Thử kích hoạt màn hình báo động SOS khẩn cấp mẫu ngay lập tức</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        await triggerEmergencyAlert(
+                          "demo_mom_uid",
+                          "Mẹ Thu",
+                          familyId || "demo_family",
+                          "Mẹ Thu cần sự giúp đỡ của con và gia đình ngay lúc này.",
+                          { lat: 21.0285, lng: 105.8542 }
+                        );
+                        showToast("Đã phát tín hiệu SOS Demo màn hình tràn!");
+                      }}
+                      className="px-3 py-2 rounded-xl bg-[#159447] text-white text-xs font-bold hover:bg-[#12803c] transition-all cursor-pointer border-0 shrink-0 shadow-2xs active:scale-95"
+                    >
+                      Kích hoạt SOS Demo
+                    </button>
+                  </div>
+                </div>
 
                 <div className="bg-[#f9fafb] rounded-2xl border border-[#e8eaed] overflow-hidden">
                   <div className="px-5 py-4 border-b border-[#e8eaed]">
