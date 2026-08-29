@@ -163,6 +163,37 @@ export const ChildDashboard: React.FC = () => {
     };
   }, [members, checkIns, todayStr, reminders]);
 
+  // Dynamic Chart Data reacting to selectedTimeRange ("today" | "week" | "month") with subtle color accents
+  const chartData = useMemo(() => {
+    if (selectedTimeRange === "today") {
+      return [
+        { day: "06:00 - 09:00", height: "70%", count: "1 lượt", bg: "bg-emerald-500 hover:bg-emerald-600" },
+        { day: "09:00 - 12:00", height: "45%", count: "1 lượt", bg: "bg-teal-500 hover:bg-teal-600" },
+        { day: "12:00 - 15:00", height: "30%", count: "0 lượt", bg: "bg-slate-300 hover:bg-slate-400" },
+        { day: "15:00 - 18:00", height: "85%", count: "2 lượt", bg: "bg-[#159447] hover:bg-[#12803c]" },
+        { day: "18:00 - 21:00", height: "100%", count: "3 lượt", bg: "bg-emerald-600 hover:bg-emerald-700" },
+      ];
+    }
+    if (selectedTimeRange === "month") {
+      return [
+        { day: "Tuần 1", height: "65%", count: "12 lượt", bg: "bg-teal-500 hover:bg-teal-600" },
+        { day: "Tuần 2", height: "80%", count: "18 lượt", bg: "bg-emerald-500 hover:bg-emerald-600" },
+        { day: "Tuần 3", height: "95%", count: "22 lượt", bg: "bg-[#159447] hover:bg-[#12803c]" },
+        { day: "Tuần 4", height: "75%", count: "15 lượt", bg: "bg-teal-600 hover:bg-teal-700" },
+      ];
+    }
+    // "week" default
+    return [
+      { day: "Thứ 2", height: "65%", count: "2 lượt", bg: "bg-emerald-500 hover:bg-emerald-600" },
+      { day: "Thứ 3", height: "85%", count: "3 lượt", bg: "bg-teal-500 hover:bg-teal-600" },
+      { day: "Thứ 4", height: "50%", count: "1 lượt", bg: "bg-emerald-400 hover:bg-emerald-500" },
+      { day: "Thứ 5", height: "95%", count: "3 lượt", bg: "bg-[#159447] hover:bg-[#12803c]" },
+      { day: "Thứ 6", height: "75%", count: "2 lượt", bg: "bg-teal-600 hover:bg-teal-700" },
+      { day: "Thứ 7", height: "100%", count: "3 lượt", bg: "bg-emerald-600 hover:bg-emerald-700" },
+      { day: "Chủ nhật", height: "80%", count: "2 lượt", bg: "bg-[#159447] hover:bg-[#12803c]" },
+    ];
+  }, [selectedTimeRange]);
+
   // Per-member last active time & activity history map
   const memberActivityMap = useMemo(() => {
     const map: Record<string, { lastCheckIn?: CheckInRecord; history: CheckInRecord[] }> = {};
@@ -830,9 +861,6 @@ export const ChildDashboard: React.FC = () => {
                       <span className="text-3xl font-black text-slate-900 tracking-tight">{dashboardStats.totalMembers}</span>
                       <span className="text-xs font-medium text-slate-500">thành viên trong nhóm</span>
                     </div>
-                    <p className="text-[11px] text-[#159447] font-bold flex items-center gap-1.5 pt-1">
-                      <span className="w-2 h-2 rounded-full bg-[#159447]" /> Trực tuyến & Đang kết nối
-                    </p>
                   </div>
 
                   {/* Card 2: Today Check-in Rate */}
@@ -881,31 +909,25 @@ export const ChildDashboard: React.FC = () => {
                       <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                         <div>
                           <h3 className="text-base font-bold text-slate-900 tracking-tight">Biểu đồ thống kê hoạt động</h3>
-                          <p className="text-xs text-slate-500">Tỷ lệ tương tác các ngày trong tuần</p>
+                          <p className="text-xs text-slate-500">
+                            Tỷ lệ tương tác {selectedTimeRange === "today" ? "trong ngày" : selectedTimeRange === "month" ? "các tuần trong tháng" : "các ngày trong tuần"}
+                          </p>
                         </div>
                         <span className="text-xs font-bold text-[#159447] bg-emerald-50 border border-emerald-100 px-3 py-1 rounded-full flex items-center gap-1">
-                          <TrendingUp className="w-3.5 h-3.5" /> +15% tuần này
+                          <TrendingUp className="w-3.5 h-3.5" /> +15% {selectedTimeRange === "today" ? "hôm nay" : selectedTimeRange === "month" ? "tháng này" : "tuần này"}
                         </span>
                       </div>
 
-                      {/* Bar Chart Visualization */}
+                      {/* Bar Chart Visualization with subtle color accents */}
                       <div className="h-48 flex items-end justify-between gap-3 pt-6 px-4">
-                        {[
-                          { day: "Thứ 2", height: "65%", count: "2 lượt" },
-                          { day: "Thứ 3", height: "85%", count: "3 lượt" },
-                          { day: "Thứ 4", height: "50%", count: "1 lượt" },
-                          { day: "Thứ 5", height: "95%", count: "3 lượt" },
-                          { day: "Thứ 6", height: "75%", count: "2 lượt" },
-                          { day: "Thứ 7", height: "100%", count: "3 lượt" },
-                          { day: "Chủ nhật", height: "80%", count: "2 lượt" },
-                        ].map((item, i) => (
+                        {chartData.map((item, i) => (
                           <div key={i} className="flex-1 flex flex-col items-center gap-2 group h-full justify-end">
-                            <div className="w-full bg-slate-100 rounded-xl hover:bg-[#159447] transition-all cursor-pointer relative" style={{ height: item.height }}>
+                            <div className={`w-full ${item.bg} rounded-xl transition-all cursor-pointer relative shadow-2xs`} style={{ height: item.height }}>
                               <span className="absolute -top-7 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[10px] py-0.5 px-2 rounded-md font-medium opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10 shadow-sm">
                                 {item.count}
                               </span>
                             </div>
-                            <span className="text-xs font-semibold text-slate-500 group-hover:text-slate-900 transition-colors">{item.day}</span>
+                            <span className="text-xs font-semibold text-slate-500 group-hover:text-slate-900 transition-colors truncate max-w-full">{item.day}</span>
                           </div>
                         ))}
                       </div>
@@ -962,7 +984,7 @@ export const ChildDashboard: React.FC = () => {
 
                   </div>
 
-                  {/* Right Column (1 Column): AI Insights & Important Events */}
+                  {/* Right Column (1 Column): AI Insights */}
                   <div className="space-y-6">
 
                     {/* AI Insights Card */}
@@ -991,35 +1013,6 @@ export const ChildDashboard: React.FC = () => {
                             )}
                           </div>
                         ))}
-                      </div>
-                    </div>
-
-                    {/* Important Events Calendar Card */}
-                    <div className="p-6 bg-white border border-slate-200/80 rounded-2xl shadow-2xs space-y-4">
-                      <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
-                        <Calendar className="w-4 h-4 text-slate-700" />
-                        <h3 className="text-base font-bold text-slate-900 tracking-tight">Sự kiện & Kỷ niệm</h3>
-                      </div>
-
-                      <div className="space-y-2.5">
-                        <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between">
-                          <div>
-                            <span className="text-xs font-bold text-slate-800 block">Sinh nhật Mẹ</span>
-                            <span className="text-[11px] text-slate-500">25 tháng 10</span>
-                          </div>
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-50 text-[#159447] border border-emerald-100">
-                            Sắp tới
-                          </span>
-                        </div>
-                        <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between">
-                          <div>
-                            <span className="text-xs font-bold text-slate-800 block">Kỷ niệm gia đình</span>
-                            <span className="text-[11px] text-slate-500">15 tháng 11</span>
-                          </div>
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-200/60 text-slate-600">
-                            Hằng năm
-                          </span>
-                        </div>
                       </div>
                     </div>
 
