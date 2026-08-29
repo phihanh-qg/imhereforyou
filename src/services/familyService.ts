@@ -565,3 +565,31 @@ export async function leaveFamily(userId: string, familyId: string): Promise<voi
     })
     .catch((e) => console.warn("Firestore fetch family for leave deferred:", e));
 }
+
+export async function removeMemberFromFamily(
+  familyId: string,
+  userId: string,
+  memberId?: string
+): Promise<void> {
+  const targetMemberId = memberId || `${familyId}_${userId}`;
+  const now = new Date().toISOString();
+
+  try {
+    const rawMembers = localStorage.getItem(`members_${familyId}`);
+    if (rawMembers) {
+      const mList: FamilyMember[] = JSON.parse(rawMembers);
+      const filtered = mList.filter((m) => m.userId !== userId && m.id !== targetMemberId);
+      localStorage.setItem(`members_${familyId}`, JSON.stringify(filtered));
+    }
+  } catch {}
+
+  deleteDoc(doc(db, "familyMembers", targetMemberId)).catch((e) =>
+    console.warn("Firestore delete member doc error:", e)
+  );
+
+  updateDoc(doc(db, "users", userId), {
+    familyId: null,
+    updatedAt: now,
+  }).catch(() => {});
+}
+
