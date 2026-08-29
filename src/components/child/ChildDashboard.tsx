@@ -167,11 +167,11 @@ export const ChildDashboard: React.FC = () => {
   const chartData = useMemo(() => {
     if (selectedTimeRange === "today") {
       return [
-        { day: "06:00 - 09:00", height: "70%", count: "1 lượt", bg: "bg-emerald-500 hover:bg-emerald-600" },
-        { day: "09:00 - 12:00", height: "45%", count: "1 lượt", bg: "bg-teal-500 hover:bg-teal-600" },
-        { day: "12:00 - 15:00", height: "30%", count: "0 lượt", bg: "bg-slate-300 hover:bg-slate-400" },
-        { day: "15:00 - 18:00", height: "85%", count: "2 lượt", bg: "bg-[#159447] hover:bg-[#12803c]" },
-        { day: "18:00 - 21:00", height: "100%", count: "3 lượt", bg: "bg-emerald-600 hover:bg-emerald-700" },
+        { day: "6h-9h", height: "70%", count: "1 lượt", bg: "bg-emerald-500 hover:bg-emerald-600" },
+        { day: "9h-12h", height: "45%", count: "1 lượt", bg: "bg-teal-500 hover:bg-teal-600" },
+        { day: "12h-15h", height: "30%", count: "0 lượt", bg: "bg-slate-300 hover:bg-slate-400" },
+        { day: "15h-18h", height: "85%", count: "2 lượt", bg: "bg-[#159447] hover:bg-[#12803c]" },
+        { day: "18h-21h", height: "100%", count: "3 lượt", bg: "bg-emerald-600 hover:bg-emerald-700" },
       ];
     }
     if (selectedTimeRange === "month") {
@@ -184,13 +184,13 @@ export const ChildDashboard: React.FC = () => {
     }
     // "week" default
     return [
-      { day: "Thứ 2", height: "65%", count: "2 lượt", bg: "bg-emerald-500 hover:bg-emerald-600" },
-      { day: "Thứ 3", height: "85%", count: "3 lượt", bg: "bg-teal-500 hover:bg-teal-600" },
-      { day: "Thứ 4", height: "50%", count: "1 lượt", bg: "bg-emerald-400 hover:bg-emerald-500" },
-      { day: "Thứ 5", height: "95%", count: "3 lượt", bg: "bg-[#159447] hover:bg-[#12803c]" },
-      { day: "Thứ 6", height: "75%", count: "2 lượt", bg: "bg-teal-600 hover:bg-teal-700" },
-      { day: "Thứ 7", height: "100%", count: "3 lượt", bg: "bg-emerald-600 hover:bg-emerald-700" },
-      { day: "Chủ nhật", height: "80%", count: "2 lượt", bg: "bg-[#159447] hover:bg-[#12803c]" },
+      { day: "T2", height: "65%", count: "2 lượt", bg: "bg-emerald-500 hover:bg-emerald-600" },
+      { day: "T3", height: "85%", count: "3 lượt", bg: "bg-teal-500 hover:bg-teal-600" },
+      { day: "T4", height: "50%", count: "1 lượt", bg: "bg-emerald-400 hover:bg-emerald-500" },
+      { day: "T5", height: "95%", count: "3 lượt", bg: "bg-[#159447] hover:bg-[#12803c]" },
+      { day: "T6", height: "75%", count: "2 lượt", bg: "bg-teal-600 hover:bg-teal-700" },
+      { day: "T7", height: "100%", count: "3 lượt", bg: "bg-emerald-600 hover:bg-emerald-700" },
+      { day: "CN", height: "80%", count: "2 lượt", bg: "bg-[#159447] hover:bg-[#12803c]" },
     ];
   }, [selectedTimeRange]);
 
@@ -803,29 +803,29 @@ export const ChildDashboard: React.FC = () => {
                   <div className="lg:col-span-2 space-y-6">
 
                     {/* Apple Style Minimalist Activity Chart */}
-                    <div className="p-6 bg-white border border-slate-200/80 rounded-2xl shadow-2xs space-y-5">
-                      <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                    <div className="p-4 sm:p-6 bg-white border border-slate-200/80 rounded-2xl shadow-2xs space-y-4 sm:space-y-5">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
                         <div>
-                          <h3 className="text-base font-bold text-slate-900 tracking-tight">Biểu đồ thống kê hoạt động</h3>
-                          <p className="text-xs text-slate-500">
+                          <h3 className="text-sm sm:text-base font-bold text-slate-900 tracking-tight">Biểu đồ thống kê hoạt động</h3>
+                          <p className="text-[11px] sm:text-xs text-slate-500">
                             Tỷ lệ tương tác {selectedTimeRange === "today" ? "trong ngày" : selectedTimeRange === "month" ? "các tuần trong tháng" : "các ngày trong tuần"}
                           </p>
                         </div>
-                        <span className="text-xs font-bold text-[#159447] bg-emerald-50 border border-emerald-100 px-3 py-1 rounded-full flex items-center gap-1">
-                          <TrendingUp className="w-3.5 h-3.5" /> +15% {selectedTimeRange === "today" ? "hôm nay" : selectedTimeRange === "month" ? "tháng này" : "tuần này"}
+                        <span className="text-[10px] sm:text-xs font-bold text-[#159447] bg-emerald-50 border border-emerald-100 px-2.5 py-1 rounded-full flex items-center gap-1 shrink-0 self-start sm:self-auto whitespace-nowrap">
+                          <TrendingUp className="w-3 h-3 sm:w-3.5 sm:h-3.5" /> +15% {selectedTimeRange === "today" ? "hôm nay" : selectedTimeRange === "month" ? "tháng này" : "tuần này"}
                         </span>
                       </div>
 
                       {/* Bar Chart Visualization with subtle color accents */}
-                      <div className="h-48 flex items-end justify-between gap-3 pt-6 px-4">
+                      <div className="h-44 sm:h-48 flex items-end justify-between gap-1.5 sm:gap-3 pt-6 px-1 sm:px-4">
                         {chartData.map((item, i) => (
-                          <div key={i} className="flex-1 flex flex-col items-center gap-2 group h-full justify-end">
+                          <div key={i} className="flex-1 flex flex-col items-center gap-1.5 sm:gap-2 group h-full justify-end min-w-0">
                             <div className={`w-full ${item.bg} rounded-xl transition-all cursor-pointer relative shadow-2xs`} style={{ height: item.height }}>
                               <span className="absolute -top-7 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[10px] py-0.5 px-2 rounded-md font-medium opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10 shadow-sm">
                                 {item.count}
                               </span>
                             </div>
-                            <span className="text-xs font-semibold text-slate-500 group-hover:text-slate-900 transition-colors truncate max-w-full">{item.day}</span>
+                            <span className="text-[10px] sm:text-xs font-semibold text-slate-500 group-hover:text-slate-900 transition-colors truncate max-w-full">{item.day}</span>
                           </div>
                         ))}
                       </div>
