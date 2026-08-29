@@ -751,7 +751,7 @@ export const ChildDashboard: React.FC = () => {
                       </div>
                     </div>
                     <div className="flex items-baseline gap-1.5 pt-1">
-                      <span className="text-3xl font-black text-slate-900 tracking-tight">{dashboardStats.totalMembers}</span>
+                      <span className="text-3xl font-bold text-slate-900 tracking-tight">{dashboardStats.totalMembers}</span>
                       <span className="text-xs font-medium text-slate-500">thành viên trong nhóm</span>
                     </div>
                   </div>
@@ -765,7 +765,7 @@ export const ChildDashboard: React.FC = () => {
                       </div>
                     </div>
                     <div className="flex items-baseline gap-1.5 pt-1">
-                      <span className="text-3xl font-black text-slate-900 tracking-tight">{dashboardStats.todayCheckInsCount}/{dashboardStats.totalMembers}</span>
+                      <span className="text-3xl font-bold text-slate-900 tracking-tight">{dashboardStats.todayCheckInsCount}/{dashboardStats.totalMembers}</span>
                       <span className="text-xs font-medium text-slate-500">đã báo bình an</span>
                     </div>
                     <div className="w-full h-1.5 rounded-full bg-slate-100 overflow-hidden mt-2">
@@ -782,7 +782,7 @@ export const ChildDashboard: React.FC = () => {
                       </div>
                     </div>
                     <div className="flex items-baseline gap-1.5 pt-1">
-                      <span className="text-3xl font-black text-slate-900 tracking-tight">{dashboardStats.connectionScore}%</span>
+                      <span className="text-3xl font-bold text-slate-900 tracking-tight">{dashboardStats.connectionScore}%</span>
                       <span className="text-xs font-bold text-[#159447]">Chỉ số gắn kết</span>
                     </div>
                     <p className="text-[11px] text-slate-400 font-medium pt-1 flex items-center gap-1">
