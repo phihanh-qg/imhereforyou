@@ -344,20 +344,20 @@ export const ChildDashboard: React.FC = () => {
                 </p>
               </div>
 
-              {/* Central Check-in Hero Button - Made responsive to screen height to prevent scrolling */}
-              <div className="mx-auto w-[230px] h-[230px] md:w-[260px] md:h-[260px] lg:w-[310px] lg:h-[310px] grid place-items-center rounded-full bg-[#f6faf7] relative before:content-[''] before:absolute before:inset-[12px] md:before:inset-[14px] lg:before:inset-[16px] before:border before:border-[#dcefe3] before:rounded-full before:pointer-events-none transition-all duration-300">
+              {/* Central Check-in Hero Button - Using height-responsive CSS classes */}
+              <div className="hero-circle-container mx-auto w-[230px] h-[230px] grid place-items-center rounded-full bg-[#f6faf7] relative before:content-[''] before:absolute before:inset-[12px] md:before:inset-[14px] lg:before:inset-[16px] before:border before:border-[#dcefe3] before:rounded-full before:pointer-events-none transition-all duration-300">
                 <button
                   id="childCheckBtn"
                   onClick={handleCheckIn}
                   disabled={isCheckInLoading}
-                  className={`w-[185px] h-[185px] md:w-[210px] md:h-[210px] lg:w-[260px] lg:h-[260px] border-0 rounded-full text-white cursor-pointer select-none transition-all duration-300 z-10 flex flex-col items-center justify-center outline-none active:scale-[0.97] hover:-translate-y-1 ${
+                  className={`hero-circle-button w-[185px] h-[185px] border-0 rounded-full text-white cursor-pointer select-none transition-all duration-300 z-10 flex flex-col items-center justify-center outline-none active:scale-[0.97] hover:-translate-y-1 ${
                     hasChildCheckedInToday
                       ? "bg-[#159447] animate-success shadow-[0_16px_40px_rgba(21,148,71,0.28)]"
                       : "bg-[#28b463] shadow-[0_16px_40px_rgba(40,180,99,0.24)] hover:shadow-[0_20px_48px_rgba(40,180,99,0.3)] animate-breathe"
                   }`}
                 >
                   <svg
-                    className={`w-8 h-8 md:w-9 md:h-9 lg:w-11 lg:h-11 mx-auto mb-1 md:mb-1.5 lg:mb-2 ${
+                    className={`w-8 h-8 md:w-9 lg:w-11 mx-auto mb-1 md:mb-1.5 lg:mb-2 ${
                       hasChildCheckedInToday ? "animate-draw" : ""
                     }`}
                     viewBox="0 0 24 24"
@@ -388,20 +388,17 @@ export const ChildDashboard: React.FC = () => {
                 )}
               </div>
 
-              {/* Action Buttons: Nút Phân Tích (AI) & Nút SOS */}
-              <div className="w-full max-w-xs pt-1 space-y-2 md:space-y-2.5">
+              {/* Action Buttons: Nút Phân Tích (AI) & Nút SOS (Side-by-side on desktop to save height) */}
+              <div className="w-full max-w-xs md:max-w-md pt-1 flex flex-col md:flex-row gap-2 md:gap-3">
                 {/* NÚT PHÂN TÍCH */}
                 <button
                   type="button"
                   id="btnAnalysis"
                   onClick={() => setShowAiModal(true)}
-                  className="w-full min-h-[46px] md:min-h-[48px] px-5 py-2.5 md:py-3 rounded-2xl bg-[#E8F8F0] hover:bg-[#DDF4E8] border border-[#C5ECD6] text-[#159447] font-bold text-sm transition-all flex items-center justify-between cursor-pointer active:scale-[0.98] shadow-3xs group"
+                  className="flex-1 min-h-[46px] md:min-h-[48px] px-4 py-2.5 rounded-2xl bg-[#E8F8F0] hover:bg-[#DDF4E8] border border-[#C5ECD6] text-[#159447] font-bold text-sm transition-all flex items-center justify-center cursor-pointer active:scale-[0.98] shadow-3xs group"
                 >
-                  <span className="text-left font-bold text-[#159447]">
+                  <span className="font-bold text-[#159447]">
                     Phân tích (AI)
-                  </span>
-                  <span className="text-[#159447] text-lg font-bold group-hover:translate-x-0.5 transition-transform">
-                    ›
                   </span>
                 </button>
 
@@ -409,13 +406,10 @@ export const ChildDashboard: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setShowHelpModal(true)}
-                  className="w-full min-h-[46px] md:min-h-[48px] px-5 py-2.5 md:py-3 rounded-2xl bg-[#fff5f6] hover:bg-[#ffebee] border border-[#fbd5db] text-[#d94b61] hover:text-[#c43c51] font-bold text-sm transition-all flex items-center justify-between cursor-pointer active:scale-[0.98] shadow-3xs group"
+                  className="flex-1 min-h-[46px] md:min-h-[48px] px-4 py-2.5 rounded-2xl bg-[#fff5f6] hover:bg-[#ffebee] border border-[#fbd5db] text-[#b92c45] font-bold text-sm transition-all flex items-center justify-center cursor-pointer active:scale-[0.98] shadow-3xs group"
                 >
-                  <span className="text-left font-bold text-[#b92c45]">
-                    Cần trợ giúp khẩn cấp (SOS)
-                  </span>
-                  <span className="text-[#d94b61] text-lg font-bold group-hover:translate-x-0.5 transition-transform">
-                    ›
+                  <span className="font-bold text-[#b92c45]">
+                    Trợ giúp khẩn cấp (SOS)
                   </span>
                 </button>
               </div>
@@ -667,7 +661,7 @@ export const ChildDashboard: React.FC = () => {
         )}
 
         {/* BOTTOM NAVIGATION (Fixed & Always Visible matching Parent Layout) */}
-        <nav className="fixed bottom-0 left-0 right-0 h-16 bg-white/95 backdrop-blur-md border-t border-slate-100 flex justify-around items-center z-50 shadow-[0_-2px_10px_rgba(0,0,0,0.03)] px-4">
+        <nav className="fixed md:relative bottom-0 md:bottom-auto left-0 right-0 md:left-auto md:right-auto h-16 md:h-12 bg-white/95 md:bg-transparent backdrop-blur-md md:backdrop-blur-none border-t md:border-t-0 border-slate-100 flex justify-around items-center z-50 md:z-auto shadow-[0_-2px_10px_rgba(0,0,0,0.03)] md:shadow-none px-4 md:px-0 mt-auto w-full">
           <div className="w-full max-w-md mx-auto flex justify-around items-center">
             <button
               onClick={() => setActiveTab("home")}

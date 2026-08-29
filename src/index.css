@@ -184,3 +184,43 @@
   animation: ctaGlow 3s ease-in-out infinite;
 }
 
+/* Height-responsive scaling on desktop to guarantee zero scroll */
+@media (min-width: 768px) {
+  /* Short desktop viewports (e.g. 13-inch laptops) */
+  @media (max-height: 740px) {
+    .hero-circle-container {
+      width: 230px !important;
+      height: 230px !important;
+    }
+    .hero-circle-button {
+      width: 185px !important;
+      height: 185px !important;
+    }
+  }
+  
+  /* Medium desktop viewports (e.g. standard laptops, monitors) */
+  @media (min-height: 741px) and (max-height: 860px) {
+    .hero-circle-container {
+      width: 290px !important;
+      height: 290px !important;
+    }
+    .hero-circle-button {
+      width: 240px !important;
+      height: 240px !important;
+    }
+  }
+  
+  /* Tall desktop viewports (e.g. large desktop monitors) */
+  @media (min-height: 861px) {
+    .hero-circle-container {
+      width: 350px !important;
+      height: 350px !important;
+    }
+    .hero-circle-button {
+      width: 300px !important;
+      height: 300px !important;
+    }
+  }
+}
+
+
