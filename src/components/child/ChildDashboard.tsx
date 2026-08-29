@@ -516,7 +516,7 @@ export const ChildDashboard: React.FC = () => {
 
           {/* TAB 1: HOME */}
           {activeTab === "home" && (
-            <div className="flex-1 flex flex-col items-center justify-center px-4 sm:px-8 py-6 overflow-hidden">
+            <div className="flex-1 flex flex-col items-center justify-center px-4 sm:px-8 py-6 pb-20 md:pb-6 overflow-y-auto">
               <div className="w-full max-w-sm flex flex-col items-center gap-5 md:gap-6">
 
                 <div className="inline-flex items-center px-3.5 py-1 rounded-full bg-[#f0f1f3] text-[#6b7280] text-xs font-medium tracking-wide">
@@ -601,14 +601,14 @@ export const ChildDashboard: React.FC = () => {
 
           {/* TAB 2: FAMILY */}
           {activeTab === "family" && (
-            <div className="flex-1 flex flex-col min-h-0 overflow-hidden px-2 sm:px-4 py-2">
+            <div className="flex-1 flex flex-col min-h-0 overflow-hidden px-2 sm:px-4 py-2 pb-20 md:pb-2">
               <FamilyMembersView parentName={parentName} isParentView={false} />
             </div>
           )}
 
           {/* TAB: CALLS */}
           {activeTab === "calls" && (
-            <div className="flex-1 overflow-y-auto px-4 sm:px-8 py-6">
+            <div className="flex-1 overflow-y-auto px-4 sm:px-8 py-6 pb-20 md:pb-6">
               <div className="max-w-lg mx-auto space-y-6">
                 <h2 className="text-xl font-bold text-[#17191c] tracking-tight">Cuộc gọi gia đình</h2>
 
@@ -715,7 +715,7 @@ export const ChildDashboard: React.FC = () => {
 
           {/* TAB: FAMILY ANALYTICS & DASHBOARD (Apple & Huawei Minimalist Desktop Style) */}
           {activeTab === "dashboard" && (
-            <div className="flex-1 overflow-y-auto px-4 sm:px-8 py-6 bg-[#FAFAFA]">
+            <div className="flex-1 overflow-y-auto px-4 sm:px-8 py-6 pb-20 md:pb-6 bg-[#FAFAFA]">
               <div className="max-w-6xl mx-auto space-y-6">
 
                 {/* Header & Filter Segment */}
@@ -919,7 +919,7 @@ export const ChildDashboard: React.FC = () => {
 
           {/* TAB 3: SETTINGS */}
           {activeTab === "settings" && (
-            <div className="flex-1 overflow-y-auto px-4 sm:px-8 py-6">
+            <div className="flex-1 overflow-y-auto px-4 sm:px-8 py-6 pb-20 md:pb-6">
               <div className="max-w-lg mx-auto space-y-6">
                 <h2 className="text-xl font-bold text-[#17191c] tracking-tight">Cài đặt</h2>
 
@@ -1065,18 +1065,21 @@ export const ChildDashboard: React.FC = () => {
             </div>
           )}
 
-          {/* MOBILE BOTTOM NAV */}
-          <nav className="md:hidden shrink-0 h-16 bg-white/95 backdrop-blur-sm border-t border-slate-100 flex justify-around items-center px-4">
+          {/* MOBILE BOTTOM NAV (Fixed & Safe Positioned) */}
+          <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200/80 flex items-center justify-around h-16 px-2 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] pb-[env(safe-area-inset-bottom)]">
             {navItems.map(({ id, label, icon: Icon }) => (
               <button
                 key={id}
+                type="button"
                 onClick={() => setActiveTab(id)}
-                className={`flex flex-col items-center gap-1 px-4 py-1.5 border-0 bg-transparent cursor-pointer transition-colors ${
-                  activeTab === id ? "text-[#159447]" : "text-slate-400"
+                className={`relative flex flex-col items-center justify-center gap-0.5 py-1 px-2 flex-1 border-0 bg-transparent cursor-pointer transition-all duration-150 active:scale-95 touch-manipulation ${
+                  activeTab === id ? "text-[#159447] font-bold" : "text-slate-400 hover:text-slate-600"
                 }`}
               >
-                <Icon className={`w-5 h-5 ${activeTab === id ? "stroke-[2.5]" : "stroke-2"}`} />
-                <span className="text-[11px] font-medium tracking-tight">{label}</span>
+                <div className={`p-1 rounded-xl transition-all ${activeTab === id ? "bg-emerald-50" : ""}`}>
+                  <Icon className={`w-5 h-5 ${activeTab === id ? "stroke-[2.5]" : "stroke-[1.8]"}`} />
+                </div>
+                <span className="text-[10px] tracking-tight">{label}</span>
               </button>
             ))}
           </nav>
