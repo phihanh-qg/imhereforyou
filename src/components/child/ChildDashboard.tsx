@@ -40,6 +40,7 @@ import { AiAnalysisModal } from "./AiAnalysisModal";
 import { EmergencyHelpModal } from "../parent/EmergencyHelpModal";
 import { ActiveMeetingBanner } from "../common/ActiveMeetingBanner";
 import { GoogleMeetSetupModal } from "../common/GoogleMeetSetupModal";
+import { NotificationBanner } from "../common/NotificationBanner";
 
 import {
   Heart,
@@ -513,6 +514,10 @@ export const ChildDashboard: React.FC = () => {
 
         {/* CONTENT AREA */}
         <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+          {/* Active Emergency SOS Alerts Banner */}
+          <div className="px-4 pt-3 shrink-0">
+            <NotificationBanner alerts={alerts} onCallParent={() => setActiveTab("calls")} />
+          </div>
 
           {/* TAB 1: HOME */}
           {activeTab === "home" && (

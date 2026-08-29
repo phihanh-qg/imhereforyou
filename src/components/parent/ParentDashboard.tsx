@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useAuth } from "../../context/AuthContext";
-import { MoodType, CheckInRecord, MoodRecord, VoiceMessageRecord, UserRole } from "../../types";
+import { MoodType, CheckInRecord, MoodRecord, VoiceMessageRecord, UserRole, AlertRecord } from "../../types";
 import {
   recordCheckIn,
   recordMood,
   listenToRecentCheckIns,
   listenToRecentMoods,
+  listenToActiveAlerts,
   getTodayDateStr,
 } from "../../services/checkInService";
 import { listenToVoiceMessages } from "../../services/voiceService";
@@ -26,6 +27,7 @@ import { NearbyPlacesModal } from "../common/NearbyPlacesModal";
 import { FamilyMembersView } from "../common/FamilyMembersView";
 import { ActiveMeetingBanner } from "../common/ActiveMeetingBanner";
 import { GoogleMeetSetupModal } from "../common/GoogleMeetSetupModal";
+import { NotificationBanner } from "../common/NotificationBanner";
 import {
   Heart,
   Video,
@@ -130,9 +132,10 @@ export const ParentDashboard: React.FC = () => {
     }
   };
 
-  // All recent check-ins
+  // All recent check-ins & active alerts
   const [allCheckIns, setAllCheckIns] = useState<CheckInRecord[]>([]);
   const [, setAllMoods] = useState<MoodRecord[]>([]);
+  const [alerts, setAlerts] = useState<AlertRecord[]>([]);
 
   // Modals
   const [showHelpModal, setShowHelpModal] = useState<boolean>(false);
@@ -170,6 +173,8 @@ export const ParentDashboard: React.FC = () => {
       }
     });
 
+    const unsubAlerts = listenToActiveAlerts(familyId, (alts) => setAlerts(alts));
+
     const unsubMeet = listenToFamilyMeeting(familyId, (meeting) => {
       setActiveMeeting(meeting);
       if (meeting?.isOpen) {
@@ -180,6 +185,7 @@ export const ParentDashboard: React.FC = () => {
     return () => {
       unsubCheckIns();
       unsubMoods();
+      unsubAlerts();
       unsubMeet();
     };
   }, [familyId, user?.uid, parentTitle]);
@@ -329,6 +335,9 @@ export const ParentDashboard: React.FC = () => {
             : "px-3 sm:px-6 py-2 sm:py-5 pb-[84px]"
         }`}
       >
+        {/* Active Emergency SOS Alerts Banner */}
+        <NotificationBanner alerts={alerts} onCallParent={handleJoinMeeting} />
+
         {/* TAB 1: HOME PANEL - TỐI GIẢN & TẬP TRUNG (NỀN TRẮNG KHÔNG KHUNG BAO BỌC) */}
         {activeTab === "home" && (
           <main className="flex-1 flex flex-col items-center justify-center py-4 sm:py-8">

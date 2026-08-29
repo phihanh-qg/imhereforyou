@@ -244,12 +244,13 @@ export function listenToActiveAlerts(
 
   const q = query(
     collection(db, "alerts"),
-    where("familyId", "==", familyId),
-    where("status", "==", "active")
+    where("familyId", "==", familyId)
   );
 
   return onSnapshot(q, (snapshot) => {
-    const records = snapshot.docs.map((d) => d.data() as AlertRecord);
+    const records = snapshot.docs
+      .map((d) => d.data() as AlertRecord)
+      .filter((a) => a.status === "active");
     records.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
     try {
       localStorage.setItem(`alerts_${familyId}`, JSON.stringify(records));
