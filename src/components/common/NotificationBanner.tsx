@@ -29,56 +29,90 @@ export const NotificationBanner: React.FC<NotificationBannerProps> = ({
 
   return (
     <>
-      {/* Full Screen Emergency Overlay Modal for Active SOS Alerts */}
+      {/* Full Screen Emergency Overlay Modal in Rich Emergency Red Tone */}
       {activeAlerts.map((alert) => (
         <div
           key={alert.id}
-          className="fixed inset-0 z-[9999] bg-slate-900/80 backdrop-blur-md flex flex-col items-center justify-center p-4 text-slate-900 animate-in fade-in duration-150"
+          className="fixed inset-0 z-[9999] bg-[#4c0519]/90 backdrop-blur-md flex flex-col items-center justify-center p-4 text-white animate-in fade-in duration-150"
         >
-          <div className="w-full max-w-[340px] sm:max-w-sm bg-white rounded-3xl p-6 shadow-2xl text-center space-y-5 border border-slate-100">
-            {/* Header text */}
+          <div className="w-full max-w-[360px] sm:max-w-md bg-white border border-rose-200 rounded-3xl p-6 shadow-2xl text-center space-y-4 text-slate-900">
+            {/* Header */}
             <div className="space-y-1">
-              <span className="text-xs font-bold text-rose-600 uppercase tracking-wider block">
-                Cần trợ giúp khẩn cấp
+              <span className="text-[11px] font-bold text-rose-600 uppercase tracking-widest block">
+                Cảnh báo khẩn cấp SOS
               </span>
-              <h2 className="text-xl font-bold text-slate-900 tracking-tight">
-                {alert.parentName} cần hỗ trợ
+              <h2 className="text-xl font-bold text-rose-950 tracking-tight">
+                {alert.parentName} cần trợ giúp
               </h2>
               {alert.message && (
-                <p className="text-xs text-slate-500 leading-relaxed pt-1 my-0">
+                <p className="text-xs text-slate-600 leading-relaxed pt-1 my-0">
                   "{alert.message}"
                 </p>
               )}
             </div>
 
-            {/* Location info if available */}
-            {alert.location && (
-              <a
-                href={`https://www.google.com/maps/search/?api=1&query=${alert.location.lat},${alert.location.lng}`}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center gap-1 text-xs font-semibold text-rose-600 hover:underline"
-              >
-                <span>Xem vị trí trên Google Maps</span>
-              </a>
-            )}
+            {/* Prominent Sender Location Box */}
+            <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-200/80 text-left space-y-1">
+              <span className="text-[10px] font-bold text-rose-700 uppercase tracking-wider block">
+                Vị trí người gửi
+              </span>
+              {alert.location ? (
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-xs font-mono font-semibold text-slate-800">
+                    {alert.location.lat.toFixed(4)}, {alert.location.lng.toFixed(4)}
+                  </span>
+                  <a
+                    href={`https://www.google.com/maps/search/?api=1&query=${alert.location.lat},${alert.location.lng}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-xs font-bold text-rose-700 hover:text-rose-900 underline shrink-0"
+                  >
+                    Xem Bản đồ
+                  </a>
+                </div>
+              ) : (
+                <span className="text-xs text-slate-500 italic block">
+                  Đang định vị GPS...
+                </span>
+              )}
+            </div>
 
-            {/* Minimalist Action buttons */}
-            <div className="space-y-2.5 pt-1">
+            {/* Emergency Action Buttons Grid */}
+            <div className="space-y-2 pt-1">
+              {/* Call Family */}
               {onCallParent && (
                 <button
                   type="button"
                   onClick={onCallParent}
                   className="w-full py-3.5 rounded-2xl bg-[#159447] hover:bg-[#12803c] text-white text-sm font-bold shadow-2xs active:scale-95 transition-all cursor-pointer border-0"
                 >
-                  Gọi ngay
+                  Gọi người thân
                 </button>
               )}
 
+              <div className="grid grid-cols-2 gap-2">
+                {/* Call 115 Ambulance */}
+                <a
+                  href="tel:115"
+                  className="py-3 rounded-2xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold transition-all text-center no-underline flex items-center justify-center cursor-pointer"
+                >
+                  Gọi 115
+                </a>
+
+                {/* Call Doctor */}
+                <a
+                  href="tel:19001567"
+                  className="py-3 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all text-center no-underline flex items-center justify-center cursor-pointer"
+                >
+                  Gọi Bác sĩ
+                </a>
+              </div>
+
+              {/* Resolve / Safe */}
               <button
                 type="button"
                 onClick={() => resolveAlert(alert.id)}
-                className="w-full py-3 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-bold transition-all cursor-pointer border-0"
+                className="w-full py-3 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-all cursor-pointer border-0 mt-1"
               >
                 Đã an toàn
               </button>
