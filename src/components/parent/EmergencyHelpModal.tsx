@@ -22,52 +22,70 @@ export const EmergencyHelpModal: React.FC<EmergencyHelpModalProps> = ({
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [sentSuccess, setSentSuccess] = useState<boolean>(false);
   const [customNote, setCustomNote] = useState<string>("");
-  const [includeLocation, setIncludeLocation] = useState<boolean>(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [locationData, setLocationData] = useState<{ lat: number; lng: number } | null>(null);
+
+  // Automatically pre-fetch location immediately when modal opens
+  React.useEffect(() => {
+    let isMounted = true;
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          if (isMounted) {
+            setLocationData({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+          }
+        },
+        async () => {
+          // Fallback to IP location
+          try {
+            const res = await fetch("https://ipapi.co/json/");
+            if (res.ok) {
+              const data = await res.json();
+              if (isMounted && data.latitude && data.longitude) {
+                setLocationData({ lat: data.latitude, lng: data.longitude });
+              }
+            }
+          } catch {}
+        },
+        { timeout: 4000, enableHighAccuracy: false, maximumAge: 60000 }
+      );
+    }
+    return () => { isMounted = false; };
+  }, []);
 
   const handleConfirmHelp = async () => {
     setSubmitting(true);
     setErrorMsg(null);
 
-    let locationData: { lat: number; lng: number; address?: string } | null = null;
+    let finalLoc = locationData;
 
-    if (includeLocation && "geolocation" in navigator) {
+    // If location isn't ready yet, attempt quick location fetch
+    if (!finalLoc && "geolocation" in navigator) {
       try {
         const pos: GeolocationPosition = await new Promise((resolve, reject) => {
           navigator.geolocation.getCurrentPosition(resolve, reject, {
-            timeout: 5000,
-            enableHighAccuracy: true,
-            maximumAge: 30000,
+            timeout: 3000,
+            enableHighAccuracy: false,
           });
         });
-        locationData = {
-          lat: pos.coords.latitude,
-          lng: pos.coords.longitude,
-        };
-      } catch (locErr) {
-        console.warn("Could not retrieve precise location, trying low accuracy:", locErr);
+        finalLoc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+      } catch {
         try {
-          const posLow: GeolocationPosition = await new Promise((resolve, reject) => {
-            navigator.geolocation.getCurrentPosition(resolve, reject, {
-              timeout: 4000,
-              enableHighAccuracy: false,
-              maximumAge: 60000,
-            });
-          });
-          locationData = {
-            lat: posLow.coords.latitude,
-            lng: posLow.coords.longitude,
-          };
-        } catch (e2) {
-          console.warn("Geolocation unavailable:", e2);
-        }
+          const res = await fetch("https://ipapi.co/json/");
+          if (res.ok) {
+            const data = await res.json();
+            if (data.latitude && data.longitude) {
+              finalLoc = { lat: data.latitude, lng: data.longitude };
+            }
+          }
+        } catch {}
       }
     }
 
     try {
       const message =
         customNote.trim() || `${parentName} cần sự giúp đỡ của con và gia đình ngay lúc này.`;
-      await triggerEmergencyAlert(parentId, parentName, familyId, message, locationData);
+      await triggerEmergencyAlert(parentId, parentName, familyId, message, finalLoc);
       setSentSuccess(true);
       if (onAlertSent) onAlertSent();
     } catch (err: any) {
@@ -163,22 +181,10 @@ export const EmergencyHelpModal: React.FC<EmergencyHelpModalProps> = ({
               />
             </div>
 
-            {/* Location Checkbox */}
-            <div className="flex items-center gap-2">
-              <input
-                id="emergency-include-location"
-                type="checkbox"
-                checked={includeLocation}
-                onChange={(e) => setIncludeLocation(e.target.checked)}
-                className="w-4 h-4 rounded text-blue-600 accent-blue-600 focus:ring-blue-500 cursor-pointer"
-              />
-              <label
-                htmlFor="emergency-include-location"
-                className="flex items-center gap-1 text-xs font-medium text-slate-700 cursor-pointer select-none"
-              >
-                <MapPin className="w-3.5 h-3.5 text-[#C40C3B] stroke-[2.2]" />
-                <span>Kèm vị trí</span>
-              </label>
+            {/* Automatically attached location status note */}
+            <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium pt-0.5">
+              <MapPin className="w-3.5 h-3.5 text-[#C40C3B] shrink-0" />
+              <span>{locationData ? "Đã đính kèm vị trí GPS tự động" : "Đang tự động lấy vị trí GPS..."}</span>
             </div>
 
             {/* 2 Main Action Buttons */}
