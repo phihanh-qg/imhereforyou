@@ -208,14 +208,6 @@ export const FamilyMembersView: React.FC<FamilyMembersViewProps> = ({
             <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">
               Danh sách thành viên ({members.length})
             </h4>
-            <button
-              type="button"
-              onClick={() => setShowAddModal(true)}
-              className="text-xs font-bold text-[#159447] hover:underline flex items-center gap-1 cursor-pointer border-0 bg-transparent"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              <span>Thêm mới</span>
-            </button>
           </div>
 
           <div className="grid grid-cols-1 gap-3">
