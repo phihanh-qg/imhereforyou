@@ -48,7 +48,7 @@ function MainApp() {
         onOpenFamilySettings={() => setShowSettings(true)} 
         onOpenUserSettings={() => setShowUserSettings(true)}
       />
-      <main className="flex-1 bg-white min-h-0">
+      <main className="flex-1 flex flex-col bg-white min-h-0 h-full overflow-hidden">
         {isParent ? <ParentDashboard /> : <ChildDashboard />}
       </main>
 
