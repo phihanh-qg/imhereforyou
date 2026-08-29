@@ -318,17 +318,15 @@ export const ChildDashboard: React.FC = () => {
                     type="button"
                     id="btnAnalysis"
                     onClick={() => setShowAiModal(true)}
-                    className="flex flex-col items-center justify-center gap-1.5 py-4 rounded-2xl bg-[#f0faf4] hover:bg-[#e4f7ec] border border-[#d1f0de] text-[#159447] font-semibold text-sm transition-all duration-150 cursor-pointer active:scale-95"
+                    className="flex items-center justify-center py-4 rounded-2xl bg-[#f0faf4] hover:bg-[#e4f7ec] border border-[#d1f0de] text-[#159447] font-semibold text-sm transition-all duration-150 cursor-pointer active:scale-95"
                   >
-                    <Sparkles className="w-5 h-5" />
                     <span>Phân tích (AI)</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => setShowHelpModal(true)}
-                    className="flex flex-col items-center justify-center gap-1.5 py-4 rounded-2xl bg-[#fff4f6] hover:bg-[#ffe8ec] border border-[#ffd0d8] text-[#d94b61] font-semibold text-sm transition-all duration-150 cursor-pointer active:scale-95"
+                    className="flex items-center justify-center py-4 rounded-2xl bg-[#fff4f6] hover:bg-[#ffe8ec] border border-[#ffd0d8] text-[#d94b61] font-semibold text-sm transition-all duration-150 cursor-pointer active:scale-95"
                   >
-                    <ShieldAlert className="w-5 h-5" />
                     <span>Trợ giúp khẩn cấp (SOS)</span>
                   </button>
                 </div>
