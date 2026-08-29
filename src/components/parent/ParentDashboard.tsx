@@ -336,7 +336,7 @@ export const ParentDashboard: React.FC = () => {
         }`}
       >
         {/* Active Emergency SOS Alerts Banner */}
-        <NotificationBanner alerts={alerts} onCallParent={handleJoinMeeting} />
+        <NotificationBanner alerts={alerts} currentUserId={user?.uid} onCallParent={handleJoinMeeting} />
 
         {/* TAB 1: HOME PANEL - TỐI GIẢN & TẬP TRUNG (NỀN TRẮNG KHÔNG KHUNG BAO BỌC) */}
         {activeTab === "home" && (

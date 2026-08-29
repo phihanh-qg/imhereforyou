@@ -5,6 +5,7 @@ import { resolveAlert } from "../../services/checkInService";
 
 interface NotificationBannerProps {
   alerts: AlertRecord[];
+  currentUserId?: string;
   missedCheckIn?: boolean;
   parentName?: string;
   onCallParent?: () => void;
@@ -12,79 +13,90 @@ interface NotificationBannerProps {
 
 export const NotificationBanner: React.FC<NotificationBannerProps> = ({
   alerts,
+  currentUserId,
   missedCheckIn,
   parentName = "Bố/Mẹ",
   onCallParent,
 }) => {
-  const activeAlerts = alerts.filter((a) => a.status === "active");
+  // Do NOT send/show emergency notification to oneself
+  const activeAlerts = alerts.filter(
+    (a) => a.status === "active" && (currentUserId ? a.parentId !== currentUserId : true)
+  );
 
   if (activeAlerts.length === 0 && !missedCheckIn) {
     return null;
   }
 
   return (
-    <div className="space-y-2.5 mb-4">
-      {/* Active Help Requests */}
+    <>
+      {/* Full Screen Emergency Overlay Modal for Active SOS Alerts */}
       {activeAlerts.map((alert) => (
         <div
           key={alert.id}
-          className="bg-rose-50/90 border border-rose-300 rounded-xl p-3.5 sm:p-4 shadow-xs text-rose-950 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 animate-in fade-in slide-in-from-top-2 duration-200"
+          className="fixed inset-0 z-[9999] bg-rose-950/85 backdrop-blur-md flex flex-col items-center justify-center p-4 sm:p-6 text-white animate-in fade-in zoom-in-95 duration-200"
         >
-          <div className="flex items-start gap-3">
-            <div className="w-8 h-8 rounded-lg bg-rose-200 text-rose-800 flex items-center justify-center shrink-0 mt-0.5">
-              <AlertTriangle className="w-4 h-4 animate-bounce" />
+          <div className="w-full max-w-md bg-white border-2 border-rose-500 rounded-3xl p-6 shadow-2xl text-slate-900 text-center space-y-5">
+            {/* Siren Icon */}
+            <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto rounded-full bg-rose-100 text-[#C40C3B] flex items-center justify-center animate-bounce">
+              <AlertTriangle className="w-8 h-8 sm:w-10 sm:h-10 stroke-[2.5]" />
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="font-bold text-rose-900 text-sm sm:text-base">
-                  CẢNH BÁO: {alert.parentName} CẦN TRỢ GIÚP
-                </span>
-                <span className="text-[10px] bg-rose-200 text-rose-900 font-semibold px-2 py-0.5 rounded-md uppercase tracking-wide">
-                  Khẩn cấp
-                </span>
-              </div>
-              <p className="text-xs sm:text-sm text-rose-800 mt-0.5 leading-relaxed">{alert.message}</p>
-              {alert.location && (
-                <div className="flex items-center gap-1.5 mt-1 text-[11px] text-rose-900 font-medium">
-                  <MapPin className="w-3 h-3" />
-                  <span>
-                    Vị trí: ({alert.location.lat.toFixed(4)}, {alert.location.lng.toFixed(4)})
-                  </span>
-                  <a
-                    href={`https://www.google.com/maps/search/?api=1&query=${alert.location.lat},${alert.location.lng}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="underline text-rose-900 font-bold hover:text-rose-950 ml-1"
-                  >
-                    Xem trên Google Maps
-                  </a>
-                </div>
-              )}
-            </div>
-          </div>
 
-          <div className="flex items-center gap-2 w-full sm:w-auto shrink-0">
-            {onCallParent && (
-              <button
-                onClick={onCallParent}
-                className="flex-1 sm:flex-none px-3.5 py-1.5 bg-rose-700 hover:bg-rose-800 text-white rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 shadow-xs transition-colors"
-              >
-                <Phone className="w-3.5 h-3.5" />
-                Gọi ngay
-              </button>
+            {/* Warning Header */}
+            <div className="space-y-2">
+              <span className="px-3 py-1 rounded-full bg-rose-100 text-rose-800 text-xs font-bold uppercase tracking-wider">
+                Tín hiệu SOS khẩn cấp
+              </span>
+              <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight leading-snug">
+                {alert.parentName.toUpperCase()} CẦN TRỢ GIÚP GẤP!
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-medium bg-slate-50 p-3 rounded-2xl border border-slate-100">
+                "{alert.message}"
+              </p>
+            </div>
+
+            {/* Location info if available */}
+            {alert.location && (
+              <div className="p-3 rounded-2xl bg-rose-50 border border-rose-100 flex items-center justify-center gap-2 text-xs font-semibold text-rose-900">
+                <MapPin className="w-4 h-4 text-rose-600 shrink-0" />
+                <span>Vị trí: ({alert.location.lat.toFixed(4)}, {alert.location.lng.toFixed(4)})</span>
+                <a
+                  href={`https://www.google.com/maps/search/?api=1&query=${alert.location.lat},${alert.location.lng}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="underline font-bold text-rose-700 hover:text-rose-900 ml-1"
+                >
+                  Xem bản đồ
+                </a>
+              </div>
             )}
-            <button
-              onClick={() => resolveAlert(alert.id)}
-              className="flex-1 sm:flex-none px-3 py-1.5 bg-white hover:bg-rose-100 border border-rose-300 text-rose-800 rounded-lg text-xs font-semibold flex items-center justify-center gap-1 transition-colors"
-            >
-              <CheckCircle2 className="w-3.5 h-3.5 text-rose-700" />
-              Đã xử lý
-            </button>
+
+            {/* Action buttons */}
+            <div className="space-y-3 pt-2">
+              {onCallParent && (
+                <button
+                  type="button"
+                  onClick={onCallParent}
+                  className="w-full py-4 rounded-2xl bg-[#159447] hover:bg-[#12803c] text-white text-base font-bold flex items-center justify-center gap-2.5 shadow-lg active:scale-95 transition-all cursor-pointer border-0"
+                >
+                  <Phone className="w-5 h-5 fill-current" />
+                  <span>Gọi cho {alert.parentName} ngay</span>
+                </button>
+              )}
+
+              <button
+                type="button"
+                onClick={() => resolveAlert(alert.id)}
+                className="w-full py-3.5 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-bold flex items-center justify-center gap-2 transition-all cursor-pointer border-0"
+              >
+                <CheckCircle2 className="w-4 h-4 text-slate-600" />
+                <span>Xác nhận an toàn / Đã xong</span>
+              </button>
+            </div>
           </div>
         </div>
       ))}
 
-      {/* Missed Check-In Warning */}
+      {/* Missed Check-In Warning Banner */}
       {missedCheckIn && (
         <div className="bg-amber-50/90 border border-amber-300 rounded-xl p-3.5 sm:p-4 text-amber-950 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
           <div className="flex items-start gap-3">
@@ -112,6 +124,6 @@ export const NotificationBanner: React.FC<NotificationBannerProps> = ({
           )}
         </div>
       )}
-    </div>
+    </>
   );
 };
