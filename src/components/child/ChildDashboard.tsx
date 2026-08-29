@@ -789,25 +789,25 @@ export const ChildDashboard: React.FC = () => {
             </div>
           )}
 
-          {/* TAB: FAMILY ANALYTICS & DASHBOARD (Apple Activity / Health Style) */}
+          {/* TAB: FAMILY ANALYTICS & DASHBOARD (Apple & Huawei Minimalist Desktop Style) */}
           {activeTab === "dashboard" && (
-            <div className="flex-1 overflow-y-auto px-4 sm:px-8 py-6">
-              <div className="max-w-lg mx-auto space-y-6">
+            <div className="flex-1 overflow-y-auto px-4 sm:px-8 py-6 bg-[#FAFAFA]">
+              <div className="max-w-6xl mx-auto space-y-6">
 
-                {/* Header & Filter segment */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                {/* Header & Filter Segment */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-200/60">
                   <div>
-                    <h2 className="text-xl font-bold text-[#17191c] tracking-tight">Tổng quan gia đình</h2>
-                    <p className="text-xs text-[#8b9096]">Theo dõi hoạt động, kết nối & phân tích AI</p>
+                    <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Tổng quan gia đình</h2>
+                    <p className="text-xs text-slate-500 mt-0.5">Thống kê hoạt động, mức độ kết nối & phân tích AI</p>
                   </div>
-                  <div className="inline-flex bg-[#f2f3f5] rounded-xl p-1 shrink-0 self-start sm:self-auto">
+                  <div className="inline-flex bg-slate-100 p-1 rounded-xl shrink-0 self-start sm:self-auto border border-slate-200/50">
                     {(["today", "week", "month"] as const).map((t) => (
                       <button
                         key={t}
                         type="button"
                         onClick={() => setSelectedTimeRange(t)}
-                        className={`px-3 py-1 rounded-lg text-xs font-bold transition-all border-0 cursor-pointer capitalize ${
-                          selectedTimeRange === t ? "bg-white text-[#159447] shadow-2xs" : "text-slate-500 hover:text-slate-800"
+                        className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all border-0 cursor-pointer ${
+                          selectedTimeRange === t ? "bg-white text-slate-900 shadow-2xs" : "text-slate-500 hover:text-slate-800"
                         }`}
                       >
                         {t === "today" ? "Hôm nay" : t === "week" ? "Tuần này" : "Tháng này"}
@@ -816,263 +816,215 @@ export const ChildDashboard: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Top Metrics Apple Grid (4 Widgets) */}
-                <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                {/* Top Metrics Grid (3 Desktop Widgets) */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {/* Card 1: Family Members */}
-                  <div className="p-4 rounded-2xl bg-white border border-slate-150 shadow-2xs space-y-2">
+                  <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-2xs space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Người thân</span>
-                      <Users className="w-4 h-4 text-emerald-600" />
+                      <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Số người thân</span>
+                      <div className="w-8 h-8 rounded-xl bg-slate-50 text-slate-700 flex items-center justify-center border border-slate-100">
+                        <Users className="w-4 h-4" />
+                      </div>
                     </div>
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-2xl font-black text-slate-800">{dashboardStats.totalMembers}</span>
-                      <span className="text-xs font-semibold text-slate-500">thành viên</span>
+                    <div className="flex items-baseline gap-1.5 pt-1">
+                      <span className="text-3xl font-black text-slate-900 tracking-tight">{dashboardStats.totalMembers}</span>
+                      <span className="text-xs font-medium text-slate-500">thành viên trong nhóm</span>
                     </div>
-                    <p className="text-[10px] text-emerald-600 font-bold flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Đang hoạt động
+                    <p className="text-[11px] text-[#159447] font-bold flex items-center gap-1.5 pt-1">
+                      <span className="w-2 h-2 rounded-full bg-[#159447]" /> Trực tuyến & Đang kết nối
                     </p>
                   </div>
 
-                  {/* Card 2: Today Check-in */}
-                  <div className="p-4 rounded-2xl bg-white border border-slate-150 shadow-2xs space-y-2">
+                  {/* Card 2: Today Check-in Rate */}
+                  <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-2xs space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Check-in</span>
-                      <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                    </div>
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-2xl font-black text-slate-800">{dashboardStats.todayCheckInsCount}/{dashboardStats.totalMembers}</span>
-                      <span className="text-xs font-semibold text-slate-500">đã báo</span>
-                    </div>
-                    <div className="w-full h-1.5 rounded-full bg-slate-100 overflow-hidden mt-1">
-                      <div className="h-full bg-[#28b463] rounded-full transition-all duration-500" style={{ width: `${dashboardStats.checkInRate}%` }} />
-                    </div>
-                  </div>
-
-                  {/* Card 3: Reminders */}
-                  <div className="p-4 rounded-2xl bg-white border border-slate-150 shadow-2xs space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Lời nhắc</span>
-                      <Bell className="w-4 h-4 text-blue-600" />
-                    </div>
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-2xl font-black text-slate-800">{dashboardStats.completedRemindersCount}/{dashboardStats.totalRemindersCount}</span>
-                      <span className="text-xs font-semibold text-slate-500">hoàn thành</span>
-                    </div>
-                    <div className="w-full h-1.5 rounded-full bg-slate-100 overflow-hidden mt-1">
-                      <div className="h-full bg-blue-500 rounded-full transition-all duration-500" style={{ width: `${dashboardStats.reminderRate}%` }} />
-                    </div>
-                  </div>
-
-                  {/* Card 4: Connection Score Ring */}
-                  <div className="p-4 rounded-2xl bg-white border border-slate-150 shadow-2xs space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Mức độ kết nối</span>
-                      <Zap className="w-4 h-4 text-amber-500" />
-                    </div>
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-2xl font-black text-slate-800">{dashboardStats.connectionScore}%</span>
-                      <span className="text-xs font-semibold text-emerald-600 font-bold">Gắn kết</span>
-                    </div>
-                    <p className="text-[10px] text-slate-400 font-medium">Tăng +12% tuần này</p>
-                  </div>
-                </div>
-
-                {/* ✨ AI Insights & Smart Action Card */}
-                <div className="p-5 rounded-3xl bg-gradient-to-br from-emerald-500 to-teal-700 text-white shadow-md space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <div className="w-7 h-7 rounded-lg bg-white/20 backdrop-blur-xs flex items-center justify-center">
-                        <Sparkles className="w-4 h-4 text-amber-300" />
+                      <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Hoạt động Check-in</span>
+                      <div className="w-8 h-8 rounded-xl bg-slate-50 text-slate-700 flex items-center justify-center border border-slate-100">
+                        <CheckCircle2 className="w-4 h-4 text-[#159447]" />
                       </div>
-                      <span className="text-xs font-bold uppercase tracking-wider text-emerald-100">AI Intelligence Insight</span>
                     </div>
-                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-white/15 text-white">Tự động phân tích</span>
+                    <div className="flex items-baseline gap-1.5 pt-1">
+                      <span className="text-3xl font-black text-slate-900 tracking-tight">{dashboardStats.todayCheckInsCount}/{dashboardStats.totalMembers}</span>
+                      <span className="text-xs font-medium text-slate-500">đã báo bình an</span>
+                    </div>
+                    <div className="w-full h-1.5 rounded-full bg-slate-100 overflow-hidden mt-2">
+                      <div className="h-full bg-[#159447] rounded-full transition-all duration-500" style={{ width: `${dashboardStats.checkInRate}%` }} />
+                    </div>
                   </div>
 
-                  <div className="space-y-3">
-                    {aiInsights.map((insight, idx) => (
-                      <div key={idx} className="p-3.5 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15 space-y-2">
-                        <div className="flex items-center gap-2 font-bold text-sm">
-                          {insight.type === "alert" ? (
-                            <AlertCircle className="w-4 h-4 text-amber-300 shrink-0" />
-                          ) : insight.type === "success" ? (
-                            <CheckCircle2 className="w-4 h-4 text-emerald-300 shrink-0" />
-                          ) : (
-                            <Activity className="w-4 h-4 text-teal-200 shrink-0" />
-                          )}
-                          <span>{insight.title}</span>
-                        </div>
-                        <p className="text-xs text-white/90 leading-relaxed">{insight.desc}</p>
-                        {insight.actionText && (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              if (insight.actionText?.includes("Gọi")) {
-                                setActiveTab("calls");
-                              } else {
-                                setShowAddReminderForm(true);
-                              }
-                            }}
-                            className="mt-1 px-3 py-1.5 rounded-xl bg-white text-[#159447] text-xs font-bold transition-all cursor-pointer border-0 shadow-2xs hover:bg-emerald-50 active:scale-95"
-                          >
-                            {insight.actionText}
-                          </button>
-                        )}
+                  {/* Card 3: Connection Score */}
+                  <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-2xs space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Mức độ kết nối</span>
+                      <div className="w-8 h-8 rounded-xl bg-slate-50 text-slate-700 flex items-center justify-center border border-slate-100">
+                        <Zap className="w-4 h-4 text-emerald-600" />
                       </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Member Activity & Last Active Status List */}
-                <div className="space-y-3">
-                  <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider px-1">Trạng thái từng người thân</h3>
-                  <div className="space-y-3">
-                    {members.map((m) => {
-                      const act = memberActivityMap[m.userId];
-                      const lastCheckIn = act?.lastCheckIn;
-                      const hasCheckedInToday = lastCheckIn?.dateStr === todayStr;
-                      const isCurrentUser = m.userId === user?.uid;
-
-                      return (
-                        <div key={m.id} className="p-4 bg-white border border-slate-150 rounded-2xl space-y-3 shadow-2xs">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 rounded-2xl bg-emerald-50 text-[#159447] font-bold flex items-center justify-center text-sm border border-emerald-100">
-                                {m.displayName?.charAt(0).toUpperCase() || "U"}
-                              </div>
-                              <div>
-                                <span className="font-bold text-slate-800 text-sm block">
-                                  {m.displayName} {isCurrentUser && <span className="text-xs font-normal text-slate-400 ml-1">(Bạn)</span>}
-                                </span>
-                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                                  {m.relationship || (m.role === "parent" ? "Bố/Mẹ" : "Con cái")}
-                                </span>
-                              </div>
-                            </div>
-
-                            {/* Status Badge */}
-                            <span className={`px-2.5 py-1 rounded-xl text-xs font-bold flex items-center gap-1.5 ${
-                              hasCheckedInToday
-                                ? "bg-emerald-50 text-emerald-700 border border-emerald-100"
-                                : "bg-amber-50 text-amber-700 border border-amber-100"
-                            }`}>
-                              <span className={`w-1.5 h-1.5 rounded-full ${hasCheckedInToday ? "bg-emerald-500" : "bg-amber-500 animate-pulse"}`} />
-                              <span>{hasCheckedInToday ? "Đã báo bình an" : "Chưa báo hôm nay"}</span>
-                            </span>
-                          </div>
-
-                          {/* Last active & recent timeline */}
-                          <div className="flex items-center justify-between text-xs border-t border-slate-50 pt-2.5 text-slate-500">
-                            <span className="flex items-center gap-1">
-                              <Clock className="w-3.5 h-3.5 text-slate-400" />
-                              Lần hoạt động gần nhất: <strong className="text-slate-700">{lastCheckIn ? lastCheckIn.dateStr : "Chưa có"}</strong>
-                            </span>
-                            {act?.history && act.history.length > 0 && (
-                              <div className="flex items-center gap-1">
-                                {act.history.slice(0, 4).map((h) => (
-                                  <span key={h.id} className="px-1.5 py-0.5 rounded-md bg-slate-100 text-[10px] font-mono text-slate-600">
-                                    {h.dateStr.slice(5)}
-                                  </span>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Family Reminders List & Add Form */}
-                <div className="bg-white border border-slate-150 rounded-2xl p-5 space-y-4 shadow-2xs">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Bell className="w-4 h-4 text-blue-600" />
-                      <h3 className="text-sm font-bold text-slate-800">Lời nhắc gia đình</h3>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => setShowAddReminderForm(!showAddReminderForm)}
-                      className="text-xs font-bold text-[#159447] hover:underline flex items-center gap-1 cursor-pointer border-0 bg-transparent"
-                    >
-                      <Plus className="w-3.5 h-3.5" />
-                      <span>{showAddReminderForm ? "Hủy" : "Tạo lời nhắc"}</span>
-                    </button>
+                    <div className="flex items-baseline gap-1.5 pt-1">
+                      <span className="text-3xl font-black text-slate-900 tracking-tight">{dashboardStats.connectionScore}%</span>
+                      <span className="text-xs font-bold text-[#159447]">Chỉ số gắn kết</span>
+                    </div>
+                    <p className="text-[11px] text-slate-400 font-medium pt-1 flex items-center gap-1">
+                      <TrendingUp className="w-3.5 h-3.5 text-[#159447]" /> Tăng +15% so với tuần trước
+                    </p>
                   </div>
+                </div>
 
-                  {showAddReminderForm && (
-                    <form onSubmit={handleAddReminder} className="flex gap-2 animate-in fade-in slide-in-from-top-1">
-                      <input
-                        type="text"
-                        value={newReminderText}
-                        onChange={(e) => setNewReminderText(e.target.value)}
-                        placeholder="Nhập nội dung lời nhắc..."
-                        className="flex-1 px-3.5 py-2 rounded-xl border border-slate-200 text-xs bg-slate-50 focus:bg-white focus:outline-none focus:border-[#159447]"
-                      />
-                      <button
-                        type="submit"
-                        className="px-4 py-2 rounded-xl bg-[#159447] text-white text-xs font-bold cursor-pointer border-0 shadow-2xs"
-                      >
-                        Thêm
-                      </button>
-                    </form>
-                  )}
+                {/* Main Desktop Two-Column Layout */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-                  <div className="space-y-2">
-                    {reminders.map((r) => (
-                      <div
-                        key={r.id}
-                        onClick={() => toggleReminder(r.id)}
-                        className={`p-3 rounded-xl border transition-all cursor-pointer flex items-center justify-between gap-3 ${
-                          r.completed
-                            ? "bg-slate-50 border-slate-100 opacity-60 line-through"
-                            : "bg-white border-slate-200 hover:border-slate-300"
-                        }`}
-                      >
-                        <div className="flex items-center gap-2.5 min-w-0">
-                          <div className={`w-5 h-5 rounded-lg flex items-center justify-center border transition-colors ${
-                            r.completed ? "bg-blue-600 border-blue-600 text-white" : "border-slate-300 bg-white"
-                          }`}>
-                            {r.completed && <Check className="w-3.5 h-3.5 stroke-[3]" />}
-                          </div>
-                          <span className="text-xs font-medium text-slate-800 truncate">{r.text}</span>
+                  {/* Left Column (2 Wide Columns): Charts & Member Activity */}
+                  <div className="lg:col-span-2 space-y-6">
+
+                    {/* Apple Style Minimalist Activity Chart */}
+                    <div className="p-6 bg-white border border-slate-200/80 rounded-2xl shadow-2xs space-y-5">
+                      <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                        <div>
+                          <h3 className="text-base font-bold text-slate-900 tracking-tight">Biểu đồ thống kê hoạt động</h3>
+                          <p className="text-xs text-slate-500">Tỷ lệ tương tác các ngày trong tuần</p>
                         </div>
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-100 text-slate-500 shrink-0">
-                          {r.memberName} • {r.time}
+                        <span className="text-xs font-bold text-[#159447] bg-emerald-50 border border-emerald-100 px-3 py-1 rounded-full flex items-center gap-1">
+                          <TrendingUp className="w-3.5 h-3.5" /> +15% tuần này
                         </span>
                       </div>
-                    ))}
-                  </div>
-                </div>
 
-                {/* Activity Trend Chart / Weekly Graph */}
-                <div className="bg-white border border-slate-150 rounded-2xl p-5 space-y-3 shadow-2xs">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Thống kê tương tác theo tuần</span>
-                    <span className="text-xs font-bold text-emerald-600 flex items-center gap-1">
-                      <TrendingUp className="w-3.5 h-3.5" /> +15% tương tác
-                    </span>
+                      {/* Bar Chart Visualization */}
+                      <div className="h-48 flex items-end justify-between gap-3 pt-6 px-4">
+                        {[
+                          { day: "Thứ 2", height: "65%", count: "2 lượt" },
+                          { day: "Thứ 3", height: "85%", count: "3 lượt" },
+                          { day: "Thứ 4", height: "50%", count: "1 lượt" },
+                          { day: "Thứ 5", height: "95%", count: "3 lượt" },
+                          { day: "Thứ 6", height: "75%", count: "2 lượt" },
+                          { day: "Thứ 7", height: "100%", count: "3 lượt" },
+                          { day: "Chủ nhật", height: "80%", count: "2 lượt" },
+                        ].map((item, i) => (
+                          <div key={i} className="flex-1 flex flex-col items-center gap-2 group h-full justify-end">
+                            <div className="w-full bg-slate-100 rounded-xl hover:bg-[#159447] transition-all cursor-pointer relative" style={{ height: item.height }}>
+                              <span className="absolute -top-7 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[10px] py-0.5 px-2 rounded-md font-medium opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10 shadow-sm">
+                                {item.count}
+                              </span>
+                            </div>
+                            <span className="text-xs font-semibold text-slate-500 group-hover:text-slate-900 transition-colors">{item.day}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Member Activity List */}
+                    <div className="p-6 bg-white border border-slate-200/80 rounded-2xl shadow-2xs space-y-4">
+                      <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                        <h3 className="text-base font-bold text-slate-900 tracking-tight">Theo dõi hoạt động người thân</h3>
+                        <span className="text-xs text-slate-400">Cập nhật thời gian thực</span>
+                      </div>
+
+                      <div className="space-y-3">
+                        {members.map((m) => {
+                          const act = memberActivityMap[m.userId];
+                          const lastCheckIn = act?.lastCheckIn;
+                          const hasCheckedInToday = lastCheckIn?.dateStr === todayStr;
+                          const isCurrentUser = m.userId === user?.uid;
+
+                          return (
+                            <div key={m.id} className="p-4 rounded-xl border border-slate-100 hover:border-slate-200 transition-all flex items-center justify-between gap-4">
+                              <div className="flex items-center gap-3.5 min-w-0">
+                                <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-700 font-bold flex items-center justify-center text-sm border border-slate-200/60 shrink-0">
+                                  {m.displayName?.charAt(0).toUpperCase() || "U"}
+                                </div>
+                                <div className="min-w-0">
+                                  <div className="flex items-center gap-2">
+                                    <span className="font-bold text-slate-800 text-sm truncate">{m.displayName}</span>
+                                    {isCurrentUser && (
+                                      <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[10px] font-bold shrink-0">
+                                        Bạn
+                                      </span>
+                                    )}
+                                  </div>
+                                  <span className="text-xs text-slate-500 block truncate">
+                                    {m.relationship || (m.role === "parent" ? "Bố/Mẹ" : "Con cái")} • Lần báo gần nhất: <strong className="text-slate-700">{lastCheckIn ? lastCheckIn.dateStr : "Chưa có"}</strong>
+                                  </span>
+                                </div>
+                              </div>
+
+                              <span className={`px-3 py-1 rounded-full text-xs font-bold border shrink-0 flex items-center gap-1.5 ${
+                                hasCheckedInToday
+                                  ? "bg-emerald-50 text-[#159447] border-emerald-100"
+                                  : "bg-slate-50 text-slate-500 border-slate-200"
+                              }`}>
+                                <span className={`w-1.5 h-1.5 rounded-full ${hasCheckedInToday ? "bg-[#159447]" : "bg-slate-400"}`} />
+                                <span>{hasCheckedInToday ? "Đã check-in" : "Chưa check-in"}</span>
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
                   </div>
-                  <div className="h-28 flex items-end justify-between gap-2 pt-4 px-2">
-                    {[
-                      { day: "T2", height: "60%" },
-                      { day: "T3", height: "80%" },
-                      { day: "T4", height: "45%" },
-                      { day: "T5", height: "90%" },
-                      { day: "T6", height: "70%" },
-                      { day: "T7", height: "100%" },
-                      { day: "CN", height: "85%" },
-                    ].map((item, i) => (
-                      <div key={i} className="flex-1 flex flex-col items-center gap-1.5">
-                        <div className="w-full bg-emerald-100 rounded-lg hover:bg-[#159447] transition-all cursor-pointer relative group" style={{ height: item.height }}>
-                          <span className="absolute -top-6 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[9px] py-0.5 px-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">
-                            {item.height}
+
+                  {/* Right Column (1 Column): AI Insights & Important Events */}
+                  <div className="space-y-6">
+
+                    {/* AI Insights Card */}
+                    <div className="p-6 bg-white border border-slate-200/80 rounded-2xl shadow-2xs space-y-4">
+                      <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
+                        <Sparkles className="w-4 h-4 text-[#159447]" />
+                        <h3 className="text-base font-bold text-slate-900 tracking-tight">AI Insights</h3>
+                      </div>
+
+                      <div className="space-y-3">
+                        {aiInsights.map((insight, idx) => (
+                          <div key={idx} className="p-4 rounded-xl bg-slate-50 border border-slate-100 space-y-2">
+                            <h4 className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                              <span className="w-1.5 h-1.5 rounded-full bg-[#159447]" />
+                              {insight.title}
+                            </h4>
+                            <p className="text-xs text-slate-600 leading-relaxed my-0">{insight.desc}</p>
+                            {insight.actionText && (
+                              <button
+                                type="button"
+                                onClick={() => setActiveTab("calls")}
+                                className="mt-2 px-3 py-1.5 rounded-lg bg-white hover:bg-slate-100 text-slate-800 border border-slate-200 text-xs font-bold transition-all cursor-pointer"
+                              >
+                                {insight.actionText}
+                              </button>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Important Events Calendar Card */}
+                    <div className="p-6 bg-white border border-slate-200/80 rounded-2xl shadow-2xs space-y-4">
+                      <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
+                        <Calendar className="w-4 h-4 text-slate-700" />
+                        <h3 className="text-base font-bold text-slate-900 tracking-tight">Sự kiện & Kỷ niệm</h3>
+                      </div>
+
+                      <div className="space-y-2.5">
+                        <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between">
+                          <div>
+                            <span className="text-xs font-bold text-slate-800 block">Sinh nhật Mẹ</span>
+                            <span className="text-[11px] text-slate-500">25 tháng 10</span>
+                          </div>
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-50 text-[#159447] border border-emerald-100">
+                            Sắp tới
                           </span>
                         </div>
-                        <span className="text-[10px] font-bold text-slate-400">{item.day}</span>
+                        <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between">
+                          <div>
+                            <span className="text-xs font-bold text-slate-800 block">Kỷ niệm gia đình</span>
+                            <span className="text-[11px] text-slate-500">15 tháng 11</span>
+                          </div>
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-200/60 text-slate-600">
+                            Hằng năm
+                          </span>
+                        </div>
                       </div>
-                    ))}
+                    </div>
+
                   </div>
+
                 </div>
 
               </div>
