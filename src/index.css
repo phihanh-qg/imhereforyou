@@ -172,3 +172,16 @@
   animation-delay: 400ms;
 }
 
+@keyframes ctaGlow {
+  0%, 100% {
+    box-shadow: 0 4px 20px rgba(46, 189, 110, 0.15), 0 0 0 0 rgba(46, 189, 110, 0.2);
+  }
+  50% {
+    box-shadow: 0 10px 30px rgba(46, 189, 110, 0.35), 0 0 0 8px rgba(46, 189, 110, 0);
+  }
+}
+
+.animate-cta-glow {
+  animation: ctaGlow 3s ease-in-out infinite;
+}
+
