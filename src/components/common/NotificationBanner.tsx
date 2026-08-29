@@ -33,63 +33,54 @@ export const NotificationBanner: React.FC<NotificationBannerProps> = ({
       {activeAlerts.map((alert) => (
         <div
           key={alert.id}
-          className="fixed inset-0 z-[9999] bg-rose-950/85 backdrop-blur-md flex flex-col items-center justify-center p-4 sm:p-6 text-white animate-in fade-in zoom-in-95 duration-200"
+          className="fixed inset-0 z-[9999] bg-slate-900/80 backdrop-blur-md flex flex-col items-center justify-center p-4 text-slate-900 animate-in fade-in duration-150"
         >
-          <div className="w-full max-w-md bg-white border-2 border-rose-500 rounded-3xl p-6 shadow-2xl text-slate-900 text-center space-y-5">
-            {/* Siren Icon */}
-            <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto rounded-full bg-rose-100 text-[#C40C3B] flex items-center justify-center animate-bounce">
-              <AlertTriangle className="w-8 h-8 sm:w-10 sm:h-10 stroke-[2.5]" />
-            </div>
-
-            {/* Warning Header */}
-            <div className="space-y-2">
-              <span className="px-3 py-1 rounded-full bg-rose-100 text-rose-800 text-xs font-bold uppercase tracking-wider">
-                Tín hiệu SOS khẩn cấp
+          <div className="w-full max-w-[340px] sm:max-w-sm bg-white rounded-3xl p-6 shadow-2xl text-center space-y-5 border border-slate-100">
+            {/* Header text */}
+            <div className="space-y-1">
+              <span className="text-xs font-bold text-rose-600 uppercase tracking-wider block">
+                Cần trợ giúp khẩn cấp
               </span>
-              <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight leading-snug">
-                {alert.parentName.toUpperCase()} CẦN TRỢ GIÚP GẤP!
+              <h2 className="text-xl font-bold text-slate-900 tracking-tight">
+                {alert.parentName} cần hỗ trợ
               </h2>
-              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-medium bg-slate-50 p-3 rounded-2xl border border-slate-100">
-                "{alert.message}"
-              </p>
+              {alert.message && (
+                <p className="text-xs text-slate-500 leading-relaxed pt-1 my-0">
+                  "{alert.message}"
+                </p>
+              )}
             </div>
 
             {/* Location info if available */}
             {alert.location && (
-              <div className="p-3 rounded-2xl bg-rose-50 border border-rose-100 flex items-center justify-center gap-2 text-xs font-semibold text-rose-900">
-                <MapPin className="w-4 h-4 text-rose-600 shrink-0" />
-                <span>Vị trí: ({alert.location.lat.toFixed(4)}, {alert.location.lng.toFixed(4)})</span>
-                <a
-                  href={`https://www.google.com/maps/search/?api=1&query=${alert.location.lat},${alert.location.lng}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="underline font-bold text-rose-700 hover:text-rose-900 ml-1"
-                >
-                  Xem bản đồ
-                </a>
-              </div>
+              <a
+                href={`https://www.google.com/maps/search/?api=1&query=${alert.location.lat},${alert.location.lng}`}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1 text-xs font-semibold text-rose-600 hover:underline"
+              >
+                <span>Xem vị trí trên Google Maps</span>
+              </a>
             )}
 
-            {/* Action buttons */}
-            <div className="space-y-3 pt-2">
+            {/* Minimalist Action buttons */}
+            <div className="space-y-2.5 pt-1">
               {onCallParent && (
                 <button
                   type="button"
                   onClick={onCallParent}
-                  className="w-full py-4 rounded-2xl bg-[#159447] hover:bg-[#12803c] text-white text-base font-bold flex items-center justify-center gap-2.5 shadow-lg active:scale-95 transition-all cursor-pointer border-0"
+                  className="w-full py-3.5 rounded-2xl bg-[#159447] hover:bg-[#12803c] text-white text-sm font-bold shadow-2xs active:scale-95 transition-all cursor-pointer border-0"
                 >
-                  <Phone className="w-5 h-5 fill-current" />
-                  <span>Gọi cho {alert.parentName} ngay</span>
+                  Gọi ngay
                 </button>
               )}
 
               <button
                 type="button"
                 onClick={() => resolveAlert(alert.id)}
-                className="w-full py-3.5 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-bold flex items-center justify-center gap-2 transition-all cursor-pointer border-0"
+                className="w-full py-3 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-bold transition-all cursor-pointer border-0"
               >
-                <CheckCircle2 className="w-4 h-4 text-slate-600" />
-                <span>Xác nhận an toàn / Đã xong</span>
+                Đã an toàn
               </button>
             </div>
           </div>
