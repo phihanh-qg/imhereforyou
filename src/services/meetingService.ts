@@ -419,7 +419,19 @@ export function listenToFamilyMeeting(
       }
     },
     (err) => {
-      console.warn("Meeting snapshot error:", err);
+      console.warn("Meeting snapshot error (using fallback):", err.message || err);
+      const currentFixed = getFamilyFixedMeetUrl(familyId) || "";
+      callback({
+        isOpen: false,
+        meetingId: `meet_${familyId}`,
+        meetUrl: currentFixed,
+        fixedMeetUrl: currentFixed,
+        createdById: "",
+        createdByName: "",
+        createdByRole: "child",
+        startedAt: "",
+        participants: [],
+      });
     }
   );
 

@@ -137,6 +137,9 @@ export const ChildDashboard: React.FC = () => {
   const [newReminderText, setNewReminderText] = useState("");
   const [showAddReminderForm, setShowAddReminderForm] = useState(false);
 
+  // Today date string helper
+  const todayStr = useMemo(() => getTodayDateStr(), []);
+
   // Computed Activity Stats
   const dashboardStats = useMemo(() => {
     const totalMembers = members.length;
