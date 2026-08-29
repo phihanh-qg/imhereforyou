@@ -318,107 +318,114 @@ export const ChildDashboard: React.FC = () => {
   return (
     <div className="w-full flex-1 bg-white flex flex-col items-center">
       <div
-        className={`w-full max-w-5xl flex flex-col flex-1 ${
+        className={`w-full max-w-5xl flex flex-col flex-1 md:h-[calc(100vh-80px)] md:max-h-[calc(100vh-80px)] md:overflow-hidden ${
           activeTab === "family"
             ? "px-2 sm:px-4 py-2 h-[calc(100dvh-120px)] max-h-[calc(100dvh-120px)] overflow-hidden"
-            : "px-3 sm:px-6 py-2 sm:py-5 pb-[84px]"
+            : "px-3 sm:px-6 py-2 sm:py-5 pb-[84px] md:pb-4"
         }`}
       >
         {/* TAB 1: HOME PANEL - TỐI GIẢN & TẬP TRUNG (GIỐNG NGƯỜI LỚN TUỔI + NÚT PHÂN TÍCH) */}
         {activeTab === "home" && (
-          <main className="flex-1 flex flex-col items-center justify-center py-4 sm:py-8">
-            <div className="w-full max-w-lg text-center flex flex-col items-center">
-              {/* Header Info */}
-              <div className="max-w-md mx-auto mb-2">
-                <div className="inline-flex items-center px-3 py-1 rounded-full bg-[#f4f6f8] text-[#71767e] text-xs font-semibold mb-2.5">
-                  <span>{todayFormattedDate}</span>
+          <main className="flex-1 flex flex-col items-center justify-center py-4 md:py-8 w-full max-w-4xl mx-auto">
+            <div className="w-full flex flex-col md:flex-row md:items-center md:justify-around gap-8 md:gap-12 lg:gap-16">
+              
+              {/* Left Column: Typography, Status, and Action Buttons */}
+              <div className="flex-1 flex flex-col items-center md:items-start text-center md:text-left space-y-6 max-w-md w-full">
+                
+                {/* Header Info */}
+                <div className="space-y-3 w-full">
+                  <div className="inline-flex items-center px-3 py-1 rounded-full bg-[#f4f6f8] text-[#71767e] text-xs font-semibold">
+                    <span>{todayFormattedDate}</span>
+                  </div>
+
+                  <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-[#17191c] leading-tight">
+                    Hôm nay bạn vẫn ổn chứ?
+                  </h1>
+
+                  <p className="text-[#71767e] text-xs sm:text-sm leading-relaxed max-w-sm md:max-w-none mx-auto md:mx-0">
+                    Chạm nhẹ một lần để những người quan tâm biết bạn đang bình an.
+                  </p>
                 </div>
 
-                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-[#17191c] m-0 mb-2">
-                  Hôm nay bạn vẫn ổn chứ?
-                </h1>
+                {/* Status indicator */}
+                <div className="text-xs sm:text-sm text-[#555b63] min-h-[26px]">
+                  {hasChildCheckedInToday ? (
+                    <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#e8f8f0] text-[#159447] font-bold text-xs sm:text-sm">
+                      <Check className="w-4 h-4 stroke-[3]" />
+                      <span>Thông báo đã được gửi đến gia đình</span>
+                    </div>
+                  ) : (
+                    <div className="inline-flex items-center gap-1.5 text-[#8a8f96] font-medium text-xs sm:text-sm">
+                      <span className="w-2 h-2 rounded-full bg-amber-400" />
+                      <span>Hôm nay bạn chưa check-in</span>
+                    </div>
+                  )}
+                </div>
 
-                <p className="text-[#71767e] text-xs sm:text-sm leading-relaxed max-w-sm mx-auto my-0">
-                  Chạm nhẹ một lần để những người quan tâm biết bạn đang <br />
-                  bình an.
-                </p>
-              </div>
-
-              {/* Central Check-in Hero Button */}
-              <div className="my-6 sm:my-8 mx-auto w-[230px] h-[230px] sm:w-[270px] sm:h-[270px] grid place-items-center rounded-full bg-[#f6faf7] relative before:content-[''] before:absolute before:inset-[12px] sm:before:inset-[14px] before:border before:border-[#dcefe3] before:rounded-full before:pointer-events-none">
-                <button
-                  id="childCheckBtn"
-                  onClick={handleCheckIn}
-                  disabled={isCheckInLoading}
-                  className={`w-[185px] h-[185px] sm:w-[220px] sm:h-[220px] border-0 rounded-full text-white cursor-pointer select-none transition-all duration-200 z-10 flex flex-col items-center justify-center outline-none active:scale-[0.97] hover:-translate-y-1 ${
-                    hasChildCheckedInToday
-                      ? "bg-[#159447] animate-success shadow-[0_16px_40px_rgba(21,148,71,0.28)]"
-                      : "bg-[#28b463] shadow-[0_16px_40px_rgba(40,180,99,0.24)] hover:shadow-[0_20px_48px_rgba(40,180,99,0.3)] animate-breathe"
-                  }`}
-                >
-                  <svg
-                    className={`w-7 h-7 sm:w-9 sm:h-9 mx-auto mb-1 ${
-                      hasChildCheckedInToday ? "animate-draw" : ""
-                    }`}
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.4"
+                {/* Action Buttons: Nút Phân Tích (AI) & Nút SOS */}
+                <div className="w-full space-y-2.5 pt-2">
+                  {/* NÚT PHÂN TÍCH */}
+                  <button
+                    type="button"
+                    id="btnAnalysis"
+                    onClick={() => setShowAiModal(true)}
+                    className="w-full min-h-[48px] px-5 py-3 rounded-2xl bg-[#E8F8F0] hover:bg-[#DDF4E8] border border-[#C5ECD6] text-[#159447] font-bold text-sm sm:text-[15px] transition-all flex items-center justify-between cursor-pointer active:scale-[0.98] shadow-2xs group"
                   >
-                    <path d="m5 12 4.2 4.2L19 6.8" />
-                  </svg>
-                  <span className="block text-[22px] sm:text-[26px] font-black my-1 leading-tight tracking-tight">
-                    {hasChildCheckedInToday ? "Bạn đã bình an" : "Báo bình an"}
-                  </span>
-                </button>
+                    <span className="text-left font-bold text-[#159447]">
+                      Phân tích (AI)
+                    </span>
+                    <span className="text-[#159447] text-lg font-bold group-hover:translate-x-0.5 transition-transform">
+                      ›
+                    </span>
+                  </button>
+
+                  {/* Nút Cần trợ giúp khẩn cấp (SOS) */}
+                  <button
+                    type="button"
+                    onClick={() => setShowHelpModal(true)}
+                    className="w-full min-h-[48px] px-5 py-3 rounded-2xl bg-[#fff5f6] hover:bg-[#ffebee] border border-[#fbd5db] text-[#d94b61] hover:text-[#c43c51] font-bold text-sm sm:text-[15px] transition-all flex items-center justify-between cursor-pointer active:scale-[0.98] shadow-2xs group"
+                  >
+                    <span className="text-left font-bold text-[#b92c45]">
+                      Cần trợ giúp khẩn cấp (SOS)
+                    </span>
+                    <span className="text-[#d94b61] text-lg font-bold group-hover:translate-x-0.5 transition-transform">
+                      ›
+                    </span>
+                  </button>
+                </div>
               </div>
 
-              {/* Status indicator */}
-              <div className="text-xs sm:text-sm text-[#555b63] min-h-[26px] mb-6">
-                {hasChildCheckedInToday ? (
-                  <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#e8f8f0] text-[#159447] font-bold text-xs sm:text-sm">
-                    <Check className="w-4 h-4 stroke-[3]" />
-                    <span>Thông báo đã được gửi đến gia đình</span>
-                  </div>
-                ) : (
-                  <div className="inline-flex items-center gap-1.5 text-[#8a8f96] font-medium text-xs sm:text-sm">
-                    <span className="w-2 h-2 rounded-full bg-amber-400" />
-                    <span>Hôm nay bạn chưa check-in</span>
-                  </div>
-                )}
+              {/* Right Column: Central Check-in Hero Button */}
+              <div className="flex-none flex justify-center items-center">
+                <div className="w-[230px] h-[230px] sm:w-[270px] sm:h-[270px] grid place-items-center rounded-full bg-[#f6faf7] relative before:content-[''] before:absolute before:inset-[12px] sm:before:inset-[14px] before:border before:border-[#dcefe3] before:rounded-full before:pointer-events-none">
+                  <button
+                    id="childCheckBtn"
+                    onClick={handleCheckIn}
+                    disabled={isCheckInLoading}
+                    className={`w-[185px] h-[185px] sm:w-[220px] sm:h-[220px] border-0 rounded-full text-white cursor-pointer select-none transition-all duration-200 z-10 flex flex-col items-center justify-center outline-none active:scale-[0.97] hover:-translate-y-1 ${
+                      hasChildCheckedInToday
+                        ? "bg-[#159447] animate-success shadow-[0_16px_40px_rgba(21,148,71,0.28)]"
+                        : "bg-[#28b463] shadow-[0_16px_40px_rgba(40,180,99,0.24)] hover:shadow-[0_20px_48px_rgba(40,180,99,0.3)] animate-breathe"
+                    }`}
+                  >
+                    <svg
+                      className={`w-7 h-7 sm:w-9 sm:h-9 mx-auto mb-1 ${
+                        hasChildCheckedInToday ? "animate-draw" : ""
+                      }`}
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.4"
+                    >
+                      <path d="m5 12 4.2 4.2L19 6.8" />
+                    </svg>
+                    <span className="block text-[22px] sm:text-[26px] font-black my-1 leading-tight tracking-tight">
+                      {hasChildCheckedInToday ? "Bạn đã bình an" : "Báo bình an"}
+                    </span>
+                  </button>
+                </div>
               </div>
 
-              {/* Action Buttons: Nút Phân Tích (AI) & Nút SOS */}
-              <div className="w-full max-w-sm pt-2 space-y-2.5">
-                {/* NÚT PHÂN TÍCH */}
-                <button
-                  type="button"
-                  id="btnAnalysis"
-                  onClick={() => setShowAiModal(true)}
-                  className="w-full min-h-[48px] px-5 py-3 rounded-2xl bg-[#E8F8F0] hover:bg-[#DDF4E8] border border-[#C5ECD6] text-[#159447] font-bold text-sm sm:text-[15px] transition-all flex items-center justify-between cursor-pointer active:scale-[0.98] shadow-2xs group"
-                >
-                  <span className="text-left font-bold text-[#159447]">
-                    Phân tích (AI)
-                  </span>
-                  <span className="text-[#159447] text-lg font-bold group-hover:translate-x-0.5 transition-transform">
-                    ›
-                  </span>
-                </button>
-
-                {/* Nút Cần trợ giúp khẩn cấp (SOS) */}
-                <button
-                  type="button"
-                  onClick={() => setShowHelpModal(true)}
-                  className="w-full min-h-[48px] px-5 py-3 rounded-2xl bg-[#fff5f6] hover:bg-[#ffebee] border border-[#fbd5db] text-[#d94b61] hover:text-[#c43c51] font-bold text-sm sm:text-[15px] transition-all flex items-center justify-between cursor-pointer active:scale-[0.98] shadow-2xs group"
-                >
-                  <span className="text-left font-bold text-[#b92c45]">
-                    Cần trợ giúp khẩn cấp (SOS)
-                  </span>
-                  <span className="text-[#d94b61] text-lg font-bold group-hover:translate-x-0.5 transition-transform">
-                    ›
-                  </span>
-                </button>
-              </div>
             </div>
           </main>
         )}
