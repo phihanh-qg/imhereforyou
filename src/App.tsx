@@ -14,7 +14,6 @@ function MainApp() {
   const [showSettings, setShowSettings] = useState<boolean>(false);
   const [showUserSettings, setShowUserSettings] = useState<boolean>(false);
 
-  // Loading state
   if (loading) {
     return (
       <div className="min-h-screen bg-[#F8FAF9] flex flex-col items-center justify-center p-4">
@@ -24,35 +23,31 @@ function MainApp() {
           </div>
         </div>
         <h2 className="text-lg font-bold text-slate-900 tracking-tight">I'm Here For You</h2>
-        <p className="text-xs text-slate-500 mt-0.5">─Éang kß║┐t nß╗æi t├ái khoß║ún an to├án...</p>
+        <p className="text-xs text-slate-500 mt-0.5">Đang kết nối tài khoản an toàn...</p>
       </div>
     );
   }
 
-  // Not authenticated -> Landing Page
   if (!user) {
     return <LandingPage />;
   }
 
-  // Authenticated but no profile or no family attached -> Onboarding Flow
   if (!profile || !profile.familyId || !family) {
     return <OnboardingFlow />;
   }
 
-  // Authenticated with profile & family
   const isParent = profile.role === "parent";
 
   return (
     <div className="min-h-screen md:h-screen md:overflow-hidden bg-white text-slate-900 flex flex-col">
-      <Header 
-        onOpenFamilySettings={() => setShowSettings(true)} 
+      <Header
+        onOpenFamilySettings={() => setShowSettings(true)}
         onOpenUserSettings={() => setShowUserSettings(true)}
       />
       <main className="flex-1 flex flex-col bg-white min-h-0 h-full overflow-hidden">
         {isParent ? <ParentDashboard /> : <ChildDashboard />}
       </main>
 
-      {/* Global Modals */}
       {showSettings && (
         <FamilySettingsModal
           family={family}
